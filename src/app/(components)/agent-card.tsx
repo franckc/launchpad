@@ -8,10 +8,13 @@ import { TrashIcon, ClockIcon } from "lucide-react";
 import { useRouter } from 'next/navigation'
 
 
-export function AgentCard({ agent }) {
+type Agent = Record<string, string>;
+
+
+export function AgentCard({ agent }: { agent: Agent }) {
   const router = useRouter()
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "RUNNING":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400";
@@ -26,12 +29,12 @@ export function AgentCard({ agent }) {
     }
   };
 
-  const handleDelete = (e) => {
+  const handleDelete = (e: React.MouseEvent<Element>) => {
     e.stopPropagation();
     // Handle delete logic here
   };
 
-  const handleStatusClick = (e) => {
+  const handleStatusClick = (e: React.MouseEvent<Element>) => {
     e.stopPropagation();
     // FIXME: Should be something like agent/${agent.id}/status
     router.push(`/agent-status`);

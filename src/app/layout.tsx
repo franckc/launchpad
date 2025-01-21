@@ -4,7 +4,9 @@ import React from "react";
 import { Header } from "./(components)/header";
 import "./globals.css";
 
-export default function Layout({ children }) {
+import type { ReactNode } from 'react';
+
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html>
         <body>

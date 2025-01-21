@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 
 export function AgentInbox() {
-  const [expandedItem, setExpandedItem] = useState(null);
+  const [expandedItem, setExpandedItem] = useState(0);
 
   const inboxItems = [
     {
@@ -40,7 +40,7 @@ export function AgentInbox() {
     },
   ];
 
-  const getStatusColor = (status) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "RUNNING":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400";
@@ -108,7 +108,7 @@ export function AgentInbox() {
                     variant="ghost"
                     size="sm"
                     onClick={() =>
-                      setExpandedItem(expandedItem === item.id ? null : item.id)
+                      setExpandedItem(expandedItem === item.id ? 0 : item.id)
                     }
                     id={`794urf_${index}`}
                   >

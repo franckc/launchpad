@@ -1,7 +1,7 @@
 'use client';
 
 import React from "react";
-import { useParams } from "react-router-dom";
+//import { useParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -9,7 +9,7 @@ import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon } from "lucide-react";
 import Link from 'next/link'
 
 export default function AgentStatus() {
-  const { id } = useParams();
+  //const { id } = useParams();
 
   return (
     <div className="space-y-6">

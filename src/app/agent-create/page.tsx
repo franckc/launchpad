@@ -27,14 +27,11 @@ import {
   ArrowLeftIcon,
   RocketIcon,
   UploadIcon,
-  ClockIcon,
-  ServerIcon,
-  BellIcon,
 } from "lucide-react";
 import Link from 'next/link'
 
 // Simple hash function
-const simpleHash = (str) => {
+const simpleHash = (str: string) => {
   let hash = 0;
   for (let i = 0; i < str.length; i++) {
     const char = str.charCodeAt(i);
@@ -48,8 +45,10 @@ export default function AgentCreate() {
   const [agentHash, setAgentHash] = useState("");
   const [lifeExpectancyType, setLifeExpectancyType] = useState("runs");
   const [isHosted, setIsHosted] = useState(true);
-  const [agentSummary, setAgentSummary] = useState("");
-  const [additionalQuestions, setAdditionalQuestions] = useState([]);
+  //const [agentSummary, setAgentSummary] = useState("");
+  const [agentSummary, ] = useState("");
+  // const [additionalQuestions, setAdditionalQuestions] = useState([]);
+  const [additionalQuestions, ] = useState([]);
 
   useEffect(() => {
     generateAgentHash();
@@ -328,7 +327,7 @@ export default function AgentCreate() {
                         </div>
                       </TableCell>
                       <TableCell id={`2h2yz4_${index}`}>
-                        <Select id={`pmq3yh_${index}`}>
+                        <Select>
                           <SelectTrigger id={`oarhob_${index}`}>
                             <SelectValue
                               placeholder="Select method"
