@@ -30,6 +30,10 @@ import {
 } from "lucide-react";
 import Link from 'next/link'
 import axios from 'axios';
+import { useRouter } from 'next/navigation';
+import { useToast } from "@/hooks/use-toast"
+import { ToastAction } from "@/components/ui/toast"
+
 
 // Simple hash function
 const simpleHash = (str: string) => {
@@ -58,6 +62,10 @@ export default function AgentCreate() {
   const [frequency, setFrequency] = useState("");
   const [connectedService, setConnectedService] = useState("");
   const [notificationMethods, setNotificationMethods] = useState({});
+
+  const router = useRouter();
+  const { toast } = useToast()
+
 
   useEffect(() => {
     generateAgentHash();
@@ -98,8 +106,19 @@ export default function AgentCreate() {
     try {
       const response = await axios.put('/api/agent/create', payload);
       console.log('Agent created successfully:', response.data);
+      console.log('Showing toast!');
+      toast({
+        title: "Agent successfully created",
+        description: "Name: " + agentName,
+      })
+      router.push('/');
     } catch (error) {
       console.error('Error creating agent:', error);
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your agent creation.",
+      })
     }
   };
 

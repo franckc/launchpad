@@ -2,9 +2,10 @@
 
 import React from "react";
 import { Header } from "./(components)/header";
-import "./globals.css";
-
+import { Toaster } from "@/components/ui/toaster"
 import type { ReactNode } from 'react';
+
+import "./globals.css";
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
@@ -14,6 +15,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <Header />
       <main className="container mx-auto p-6">
         {children}
+        <Toaster />
       </main>
     </div>
         </body>
