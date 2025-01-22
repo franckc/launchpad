@@ -29,6 +29,7 @@ import {
   UploadIcon,
 } from "lucide-react";
 import Link from 'next/link'
+import axios from 'axios';
 
 // Simple hash function
 const simpleHash = (str: string) => {
@@ -45,10 +46,18 @@ export default function AgentCreate() {
   const [agentHash, setAgentHash] = useState("");
   const [lifeExpectancyType, setLifeExpectancyType] = useState("runs");
   const [isHosted, setIsHosted] = useState(true);
-  //const [agentSummary, setAgentSummary] = useState("");
   const [agentSummary, ] = useState("");
-  // const [additionalQuestions, setAdditionalQuestions] = useState([]);
   const [additionalQuestions, ] = useState([]);
+  const [agentName, setAgentName] = useState("");
+  const [role, setRole] = useState("");
+  const [goal, setGoal] = useState("");
+  const [backstory, setBackstory] = useState("");
+  const [taskDescription, setTaskDescription] = useState("");
+  const [expectedOutput, setExpectedOutput] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [frequency, setFrequency] = useState("");
+  const [connectedService, setConnectedService] = useState("");
+  const [notificationMethods, setNotificationMethods] = useState({});
 
   useEffect(() => {
     generateAgentHash();
@@ -67,6 +76,32 @@ export default function AgentCreate() {
     { level: "Urgent", description: "Time-sensitive action needed" },
     { level: "Critical", description: "Immediate attention required" },
   ];
+
+  const handleSubmit = async () => {
+    const payload = {
+      agentHash,
+      agentName,
+      lifeExpectancyType,
+      isHosted,
+      role,
+      goal,
+      backstory,
+      taskDescription,
+      expectedOutput,
+      startTime,
+      frequency,
+      connectedService,
+      notificationMethods,
+      additionalQuestions,
+    };
+
+    try {
+      const response = await axios.put('/api/agent/create', payload);
+      console.log('Agent created successfully:', response.data);
+    } catch (error) {
+      console.error('Error creating agent:', error);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -108,7 +143,11 @@ export default function AgentCreate() {
                 <Label htmlFor="name">
                   Agent Name
                 </Label>
-                <Input placeholder="Enter a name for your agent" />
+                <Input
+                  placeholder="Enter a name for your agent"
+                  value={agentName}
+                  onChange={(e) => setAgentName(e.target.value)}
+                />
               </div>
 
               <div className="space-y-4">
@@ -146,14 +185,19 @@ export default function AgentCreate() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <Label>Start Time</Label>
-                    <Input type="time" />
+                    <Input
+                      type="time"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value)}
+                    />
                   </div>
                   <div>
                     <Label>Frequency</Label>
-                    <Select>
+                    <Select onValueChange={setFrequency}>
                       <SelectTrigger>
                         <SelectValue
                           placeholder="Select frequency"
+                          value={frequency}
                         />
                       </SelectTrigger>
                       <SelectContent>
@@ -201,6 +245,8 @@ export default function AgentCreate() {
                 <Label>Role</Label>
                 <Textarea
                   placeholder="Define the agent's role and responsibilities"
+                  value={role}
+                  onChange={(e) => setRole(e.target.value)}
                 />
               </div>
 
@@ -208,6 +254,8 @@ export default function AgentCreate() {
                 <Label>Goal</Label>
                 <Textarea
                   placeholder="What is the primary objective of this agent?"
+                  value={goal}
+                  onChange={(e) => setGoal(e.target.value)}
                 />
               </div>
 
@@ -215,6 +263,8 @@ export default function AgentCreate() {
                 <Label>Backstory</Label>
                 <Textarea
                   placeholder="Provide context and background for the agent"
+                  value={backstory}
+                  onChange={(e) => setBackstory(e.target.value)}
                 />
               </div>
 
@@ -226,6 +276,8 @@ export default function AgentCreate() {
                   </Label>
                   <Textarea
                     placeholder="Describe the specific task"
+                    value={taskDescription}
+                    onChange={(e) => setTaskDescription(e.target.value)}
                   />
                 </div>
                 <div className="space-y-2">
@@ -234,6 +286,8 @@ export default function AgentCreate() {
                   </Label>
                   <Textarea
                     placeholder="What should the task produce?"
+                    value={expectedOutput}
+                    onChange={(e) => setExpectedOutput(e.target.value)}
                   />
                 </div>
               </div>
@@ -247,9 +301,9 @@ export default function AgentCreate() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 <Label>Connected Service</Label>
-                <Select>
+                <Select onValueChange={setConnectedService}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a service" />
+                    <SelectValue placeholder="Select a service" value={connectedService} />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="gdocs">
@@ -327,7 +381,7 @@ export default function AgentCreate() {
                         </div>
                       </TableCell>
                       <TableCell id={`2h2yz4_${index}`}>
-                        <Select>
+                        <Select onValueChange={(value) => setNotificationMethods((prev) => ({ ...prev, [priority.level]: value }))}>
                           <SelectTrigger id={`oarhob_${index}`}>
                             <SelectValue
                               placeholder="Select method"
@@ -381,7 +435,7 @@ export default function AgentCreate() {
             </CardContent>
           </Card>
 
-          <Button className="w-full">
+          <Button className="w-full" onClick={handleSubmit}>
             <RocketIcon className="h-4 w-4 mr-2" />
             Launch Agent
           </Button>

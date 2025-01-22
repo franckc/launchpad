@@ -5,8 +5,8 @@ export async function PUT(request: Request) {
 
   // Create the agent in the DB
   const agent = await prisma.agent.create({ data: {
-    name: body.name,
-    config: body.config,
+    name: body.agentName,
+    config: body,
   }});
 
   return Response.json({ status: 'ok', agentId: agent.id });
