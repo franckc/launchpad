@@ -6,4 +6,4 @@ Shacdn
 
 
 Prisma
-  - npx prisma db:push
+  - npx prisma db push

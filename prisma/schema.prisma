@@ -38,6 +38,7 @@ model Agent {
 }
 
 enum JobStatusType {
+  CREATED
   RUNNING
   WAITING_FOR_FEEDBACK
   DONE
@@ -50,7 +51,7 @@ model Job {
   agent_config  Json
   task_config   Json
   status        JobStatusType
-  output        Json
+  output        Json?
   createdAt     DateTime    @default(now()) @map(name: "created_at")
   updatedAt     DateTime    @updatedAt @map(name: "updated_at")
   @@map(name: "job")  
