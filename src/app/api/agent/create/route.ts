@@ -12,7 +12,8 @@ export async function PUT(request: Request) {
   }});
 
   // Call AI engine to kickoff the agent run.
-  const url = process.env.AI_ENGINE_URL + '/api/job/start'
+  const url = process.env.AI_ENGINE_URL + '/api/job/start';
+  console.log('Calling /api/job/start on server at URL:', url);
 
   const response = await fetch(url, {
     method: 'POST',
