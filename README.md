@@ -6,4 +6,5 @@ Shacdn
 
 
 Prisma
-  - npx prisma db push
+  - Create a migration from changes in Prisma schema, apply it to the database, trigger generators (e.g. Prisma Client)
+    prisma migrate dev

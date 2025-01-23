@@ -9,13 +9,17 @@ generator client {
   previewFeatures = ["postgresqlExtensions"]
 }
 
-// Note: PRISMA_ for &pgbouncer=true
+// Franck's notes: PRISMA_ adds the "&pgbouncer=true"
 // TIPS:
 //  1. do not use bouncer when running 'npx prisma db push' - otherwise it hangs.
 //  2. npx loads .env so even if you define env var in the shell they will get overriden by .env.
+// Supabase notes
+//  - url = Connect to Supabase via connection pooling with Supavisor for the app
+//  - directUrl =  Direct connection to the database. Used for migrations.
+//
 datasource db {
   provider = "postgresql"
-  url       = env("POSTGRES_URL")
+  url       = env("POSTGRES_PRISMA_URL_PGBOUNCER")
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
