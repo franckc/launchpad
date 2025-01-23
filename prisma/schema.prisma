@@ -15,9 +15,8 @@ generator client {
 //  2. npx loads .env so even if you define env var in the shell they will get overriden by .env.
 datasource db {
   provider = "postgresql"
-  //url       = env("SUPA_POSTGRES_PRISMA_URL")
-  //directUrl = env("SUPA_POSTGRES_URL_NON_POOLING")
-  url         = env("DATABASE_URL")
+  url       = env("SUPA_POSTGRES_PRISMA_URL")
+  directUrl = env("SUPA_POSTGRES_URL_NON_POOLING")
 }
 
 model User {
