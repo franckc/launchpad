@@ -32,7 +32,7 @@ import Link from 'next/link'
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast"
-import { ToastAction } from "@/components/ui/toast"
+//import { ToastAction } from "@/components/ui/toast"
 
 
 // Simple hash function
@@ -214,10 +214,7 @@ export default function AgentCreate() {
                     <Label>Frequency</Label>
                     <Select onValueChange={setFrequency}>
                       <SelectTrigger>
-                        <SelectValue
-                          placeholder="Select frequency"
-                          value={frequency}
-                        />
+                        <SelectValue placeholder="Select frequency" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="hourly">
@@ -322,7 +319,7 @@ export default function AgentCreate() {
                 <Label>Connected Service</Label>
                 <Select onValueChange={setConnectedService}>
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a service" value={connectedService} />
+                    <SelectValue placeholder="Select a service" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="gdocs">
