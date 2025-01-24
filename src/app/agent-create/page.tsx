@@ -32,8 +32,7 @@ import Link from 'next/link'
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast"
-//import { ToastAction } from "@/components/ui/toast"
-
+import { z } from "zod"
 
 // Simple hash function
 const simpleHash = (str: string) => {
@@ -46,6 +45,16 @@ const simpleHash = (str: string) => {
   return Math.abs(hash).toString(16).substring(0, 10);
 };
 
+const agentSchema = z.object({
+  agentName: z.string().nonempty("Mandatory field"),
+  role: z.string().nonempty("Mandatory field"),
+  goal: z.string().nonempty("Mandatory field"),
+  backstory: z.string().nonempty("Mandatory field"),
+  taskDescription: z.string().nonempty("Mandatory field"),
+  expectedOutput: z.string().nonempty("Mandatory field"),
+  // ...other fields...
+});
+
 export default function AgentCreate() {
   const [agentHash, setAgentHash] = useState("");
   const [lifeExpectancyType, setLifeExpectancyType] = useState("runs");
@@ -53,11 +62,17 @@ export default function AgentCreate() {
   const [agentSummary, ] = useState("");
   const [additionalQuestions, ] = useState([]);
   const [agentName, setAgentName] = useState("");
+  const [agentNameError, setAgentNameError] = useState("");
   const [role, setRole] = useState("");
+  const [roleError, setRoleError] = useState("");
   const [goal, setGoal] = useState("");
+  const [goalError, setGoalError] = useState("");
   const [backstory, setBackstory] = useState("");
+  const [backstoryError, setBackstoryError] = useState("");
   const [taskDescription, setTaskDescription] = useState("");
+  const [taskDescriptionError, setTaskDescriptionError] = useState("");
   const [expectedOutput, setExpectedOutput] = useState("");
+  const [expectedOutputError, setExpectedOutputError] = useState("");
   const [startTime, setStartTime] = useState("");
   const [frequency, setFrequency] = useState("");
   const [connectedService, setConnectedService] = useState("");
@@ -89,19 +104,37 @@ export default function AgentCreate() {
     const payload = {
       agentHash,
       agentName,
+      role,
+      goal,
+      backstory,
+      taskDescription,
+      expectedOutput,
       lifeExpectancyType,
       isHosted,
-      role, // agent role
-      goal, // agent goal
-      backstory, // agent backstory
-      taskDescription, // task description
-      expectedOutput, // task expected output
       startTime,
       frequency,
       connectedService,
       notificationMethods,
       additionalQuestions,
     };
+
+    const result = agentSchema.safeParse(payload);
+    if (!result.success) {
+      const error = result.error.format();
+      setAgentNameError(error.agentName?._errors[0] || "");
+      setRoleError(error.role?._errors[0] || "");
+      setGoalError(error.goal?._errors[0] || "");
+      setBackstoryError(error.backstory?._errors[0] || "");
+      setTaskDescriptionError(error.taskDescription?._errors[0] || "");
+      setExpectedOutputError(error.expectedOutput?._errors[0] || "");
+      return;
+    }
+    setAgentNameError("");
+    setRoleError("");
+    setGoalError("");
+    setBackstoryError("");
+    setTaskDescriptionError("");
+    setExpectedOutputError("");
 
     try {
       const response = await axios.put('/api/agent/create', payload);
@@ -162,10 +195,14 @@ export default function AgentCreate() {
                 <Label htmlFor="name">
                   Agent Name
                 </Label>
+                {agentNameError && (
+                  <p className="text-red-500 text-sm">{agentNameError}</p>
+                )}
                 <Input
                   placeholder="Enter a name for your agent"
                   value={agentName}
                   onChange={(e) => setAgentName(e.target.value)}
+                  className={agentNameError ? "bg-red-100" : ""}
                 />
               </div>
 
@@ -259,28 +296,40 @@ export default function AgentCreate() {
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label>Role</Label>
+                {roleError && (
+                  <p className="text-red-500 text-sm">{roleError}</p>
+                )}
                 <Textarea
                   placeholder="Define the agent's role and responsibilities"
                   value={role}
                   onChange={(e) => setRole(e.target.value)}
+                  className={roleError ? "bg-red-100" : ""}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Goal</Label>
+                {goalError && (
+                  <p className="text-red-500 text-sm">{goalError}</p>
+                )}
                 <Textarea
                   placeholder="What is the primary objective of this agent?"
                   value={goal}
                   onChange={(e) => setGoal(e.target.value)}
+                  className={goalError ? "bg-red-100" : ""}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label>Backstory</Label>
+                {backstoryError && (
+                  <p className="text-red-500 text-sm">{backstoryError}</p>
+                )}
                 <Textarea
                   placeholder="Provide context and background for the agent"
                   value={backstory}
                   onChange={(e) => setBackstory(e.target.value)}
+                  className={backstoryError ? "bg-red-100" : ""}
                 />
               </div>
 
@@ -290,20 +339,28 @@ export default function AgentCreate() {
                   <Label className="text-sm">
                     Description
                   </Label>
+                  {taskDescriptionError && (
+                    <p className="text-red-500 text-sm">{taskDescriptionError}</p>
+                  )}
                   <Textarea
                     placeholder="Describe the specific task"
                     value={taskDescription}
                     onChange={(e) => setTaskDescription(e.target.value)}
+                    className={taskDescriptionError ? "bg-red-100" : ""}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-sm">
                     Expected Output
                   </Label>
+                  {expectedOutputError && (
+                    <p className="text-red-500 text-sm">{expectedOutputError}</p>
+                  )}
                   <Textarea
                     placeholder="What should the task produce?"
                     value={expectedOutput}
                     onChange={(e) => setExpectedOutput(e.target.value)}
+                    className={expectedOutputError ? "bg-red-100" : ""}
                   />
                 </div>
               </div>
