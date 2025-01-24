@@ -6,30 +6,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrashIcon, ClockIcon } from "lucide-react";
 import { useRouter } from 'next/navigation'
-
+import { getJobStatusColor, formatDate } from "@/lib/utils";
 
 type Agent = Record<string, any>;
 
 
 export function AgentCard({ agent }: { agent: Agent }) {
   const router = useRouter()
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "CREATED":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-400";
-      case "RUNNING":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400";
-      case "SCHEDULED":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-400";
-      case "WAITING_FOR_FEEDBACK":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-400";
-      case "DONE":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-400";
-    }
-  };
 
   const handleDelete = (e: React.MouseEvent<Element>) => {
     e.stopPropagation();
@@ -41,8 +24,9 @@ export function AgentCard({ agent }: { agent: Agent }) {
     router.push(`/agent/${agent.id}/status`);
   };
 
-  // Defensicve code to handle the case where the agent has no job yet.
+  // Defensive code to handle the case where the agent has no job yet.
   // Should not happen in production.
+  const latestJob = agent.jobs.length ? agent.jobs[0] : null;
   const latestJobStatus = agent.latestJob ? agent.latestJob.status : "";
 
   return (
@@ -67,19 +51,18 @@ export function AgentCard({ agent }: { agent: Agent }) {
         </div>
 
         <div className="mt-4 space-y-2">
-          <Badge
-            className={`cursor-pointer ${getStatusColor(latestJobStatus)}`}
-            onClick={handleStatusClick}
-          >
+          <Badge className={getJobStatusColor(latestJobStatus)}>
             {latestJobStatus.replace("_", " ")}
           </Badge>
 
-          <div
-            className="flex items-center text-sm text-muted-foreground"
-          >
-            <ClockIcon className="h-4 w-4 mr-1" />
-            {agent.lastActive}
-          </div>
+          { latestJob && (
+            <div
+              className="flex items-center text-sm text-muted-foreground"
+            >
+              <ClockIcon className="h-4 w-4 mr-1" />
+              {formatDate(latestJob.updatedAt)}
+            </div>
+          )}
         </div>
       </CardContent>
     </Card>

@@ -5,8 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon } from "lucide-react";
-import moment from 'moment';
 import { useRouter } from 'next/navigation';
+import { getJobStatusColor, formatDate } from "@/lib/utils";
+
 
 interface Job {
   status: string;
@@ -50,29 +51,7 @@ export default function AgentStatus({ params }: { params: Params }) {
     return <div>Loading...</div>;
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "CREATED":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-400";
-      case "RUNNING":
-        return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400";
-      case "SCHEDULED":
-        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-400";
-      case "WAITING_FOR_FEEDBACK":
-        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-400";
-      case "DONE":
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-400";
-      default:
-        return "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-400";
-    }
-  };
 
-  const formatDate = (dateString: string) => {
-    const pastDate = moment(dateString);
-    const agoString = pastDate.fromNow();
-    return agoString;
-    //return moment(dateString).format('MM/DD/YY h:mm:ss a');
-  };
 
   const latestJob = agent.jobs.length ? agent.jobs[0] : null;
   const latestJobStatus = agent.jobs.length ? agent.jobs[0].status : 'NO JOB';
@@ -98,7 +77,7 @@ export default function AgentStatus({ params }: { params: Params }) {
           <CardTitle className="flex items-center justify-between">
             <span>Status Overview</span>
             <Badge
-              className={getStatusColor(latestJobStatus)}
+              className={getJobStatusColor(latestJobStatus)}
             >
               {latestJobStatus}
             </Badge>
