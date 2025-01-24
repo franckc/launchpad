@@ -14,7 +14,8 @@ export function AgentList() {
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        const response = await fetch('/api/agents/list');
+        // FIXME: dyanmic user id
+        const response = await fetch('/api/agents/list/0');
         if (response.ok) {
           const data = await response.json();
           setAgents(data);
