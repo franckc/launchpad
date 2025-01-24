@@ -38,7 +38,6 @@ export function AgentCard({ agent }: { agent: Agent }) {
 
   const handleStatusClick = (e: React.MouseEvent<Element>) => {
     e.stopPropagation();
-    // FIXME: Should be something like agent/${agent.id}/status
     router.push(`/agent/${agent.id}/status`);
   };
 
@@ -50,7 +49,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
     <Card
       className="cursor-pointer hover:shadow-md transition-shadow"
       // FIXME: Should be something like agent/${agent.id}/status
-      onClick={() => router.push(`/agent-edit`)}
+      onClick={() => router.push(`/agent/${agent.id}/status`)}
     >
       <CardContent className="p-4">
         <div className="flex justify-between items-start">

@@ -8,17 +8,23 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeftIcon, SaveIcon } from "lucide-react";
-import Link from 'next/link'
+import { useRouter } from 'next/navigation';
 
 export default function AgentEdit() {
   //const { id } = useParams();
 
+  const router = useRouter();
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-      <Button variant="ghost" className="p-0">
+        <Button
+            variant="ghost"
+            className="p-0"
+            onClick={() => router.push("/")}
+          >
           <ArrowLeftIcon className="h-4 w-4 mr-2" />
-          <Link href="/">Back</Link>
+          Back
         </Button>
         <h2 className="text-2xl font-bold">
           Edit Agent

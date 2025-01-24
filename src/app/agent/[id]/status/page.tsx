@@ -5,8 +5,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon } from "lucide-react";
-import Link from 'next/link';
 import moment from 'moment';
+import { useRouter } from 'next/navigation';
 
 interface Job {
   status: string;
@@ -25,6 +25,8 @@ interface Params {
 export default function AgentStatus({ params }: { params: Params }) {
   const agentId = params.id;
   const [agent, setAgent] = useState<Agent | null>(null);
+
+  const router = useRouter();
 
   useEffect(() => {
     const fetchAgent = async () => {
@@ -78,9 +80,13 @@ export default function AgentStatus({ params }: { params: Params }) {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button variant="ghost" className="p-0">
-          <ArrowLeftIcon className="h-4 w-4 mr-2" />
-          <Link href="/">Back</Link>
+        <Button
+            variant="ghost"
+            className="p-0"
+            onClick={() => router.push("/")}
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            Back
         </Button>
         <h2 className="text-2xl font-bold">
           Agent Status
@@ -113,7 +119,7 @@ export default function AgentStatus({ params }: { params: Params }) {
             <Card>
               <CardContent className="p-4">
                 <div className="text-sm text-muted-foreground">
-                  Tasks Completed
+                  Runs Completed
                 </div>
                 <div className="text-2xl font-bold">
                   {agent.jobs.length}

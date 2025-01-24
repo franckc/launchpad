@@ -158,10 +158,14 @@ export default function AgentCreate() {
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
-        <Button variant="ghost" className="p-0">
-          <ArrowLeftIcon className="h-4 w-4 mr-2" />
-          <Link href="/">Back</Link>
-        </Button>
+        <Button
+            variant="ghost"
+            className="p-0"
+            onClick={() => router.push("/")}
+          >
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            Back
+          </Button>
         <h2 className="text-2xl font-bold">
           Create New Agent
         </h2>
@@ -415,16 +419,16 @@ export default function AgentCreate() {
 
         {/* Sidebar */}
         <div className="space-y-6">
-          <Card>
+        <Card>
             <CardHeader>
-              <CardTitle>Agent Summary</CardTitle>
+              <CardTitle>Additional Questions</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose prose-sm">
-                <p className="text-muted-foreground">
-                  {agentSummary ||
-                    "Summary will appear here as you define the agent..."}
-                </p>
+              <div className="space-y-4">
+                  <p className="text-sm text-muted-foreground">
+                    Questions will appear here based on your agent
+                    configuration...
+                  </p>
               </div>
             </CardContent>
           </Card>
@@ -483,27 +487,14 @@ export default function AgentCreate() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Additional Questions</CardTitle>
+              <CardTitle>Agent Summary</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
-                {additionalQuestions.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    Questions will appear here based on your agent
-                    configuration...
-                  </p>
-                ) : (
-                  additionalQuestions.map((question, index) => (
-                    <div
-                      key={index}
-                      className="space-y-2"
-                      id={`c3ikzq_${index}`}
-                    >
-                      <Label id={`2rl7cu_${index}`}>{question}</Label>
-                      <Input id={`eb9el0_${index}`} />
-                    </div>
-                  ))
-                )}
+              <div className="prose prose-sm">
+                <p className="text-muted-foreground">
+                  {agentSummary ||
+                    "Summary will appear here as you define the agent..."}
+                </p>
               </div>
             </CardContent>
           </Card>
