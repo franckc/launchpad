@@ -8,9 +8,23 @@ import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon } from "lucide-react";
 import Link from 'next/link';
 import moment from 'moment';
 
-export default function AgentStatus({ params }) {
+interface Job {
+  status: string;
+  output: string;
+  updatedAt: string;
+}
+
+interface Agent {
+  jobs: Job[];
+}
+
+interface Params {
+  id: string;
+}
+
+export default function AgentStatus({ params }: { params: Params }) {
   const agentId = params.id;
-  const [agent, setAgent] = useState(null);
+  const [agent, setAgent] = useState<Agent | null>(null);
 
   useEffect(() => {
     const fetchAgent = async () => {
@@ -57,9 +71,6 @@ export default function AgentStatus({ params }) {
     return agoString;
     //return moment(dateString).format('MM/DD/YY h:mm:ss a');
   };
-
-
-  console.log("LOADED AGENT", agent);
 
   const latestJob = agent.jobs.length ? agent.jobs[0] : null;
   const latestJobStatus = agent.jobs.length ? agent.jobs[0].status : 'NO JOB';

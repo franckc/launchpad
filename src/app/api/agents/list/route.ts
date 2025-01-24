@@ -21,8 +21,6 @@ export async function GET(request: Request) {
       latestJob: agent.jobs ? agent.jobs[0] : null
     }));
 
-    console.log("AGENTS LIST=", agentsWithLatestTask);
-
     return new Response(JSON.stringify(agentsWithLatestTask), {
       status: 200,
       headers: {

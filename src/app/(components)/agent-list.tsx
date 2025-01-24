@@ -4,7 +4,12 @@ import React, { useEffect, useState } from "react";
 import { AgentCard } from "./agent-card";
 
 export function AgentList() {
-  const [agents, setAgents] = useState([]);
+  interface Agent {
+    id: string;
+    // Add other properties of Agent here
+  }
+
+  const [agents, setAgents] = useState<Agent[]>([]);
 
   useEffect(() => {
     const fetchAgents = async () => {
