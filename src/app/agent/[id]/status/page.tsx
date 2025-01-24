@@ -117,7 +117,7 @@ export default function AgentStatus({ params }) {
                   <div className="text-sm text-muted-foreground">
                     Raw Output
                   </div>
-                  <div className="text-l">
+                  <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
                     {latestJob ? latestJob.output : 'N/A'}
                   </div>
                 </CardContent>
