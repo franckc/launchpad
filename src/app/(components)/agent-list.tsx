@@ -1,35 +1,28 @@
 'use client';
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { AgentCard } from "./agent-card";
 
 export function AgentList() {
-  const agents = [
-    {
-      id: "1",
-      name: "Data Analysis Agent",
-      status: "RUNNING",
-      lastActive: "2 minutes ago",
-    },
-    {
-      id: "2",
-      name: "Document Processor",
-      status: "SCHEDULED",
-      lastActive: "1 hour ago",
-    },
-    {
-      id: "3",
-      name: "Email Assistant",
-      status: "WAITING_FOR_FEEDBACK",
-      lastActive: "5 minutes ago",
-    },
-    {
-      id: "4",
-      name: "Research Agent",
-      status: "DONE",
-      lastActive: "2 days ago",
-    },
-  ];
+  const [agents, setAgents] = useState([]);
+
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        const response = await fetch('/api/agents/list');
+        if (response.ok) {
+          const data = await response.json();
+          setAgents(data);
+        } else {
+          console.error('Failed to fetch agents');
+        }
+      } catch (error) {
+        console.error('Error fetching agents:', error);
+      }
+    };
+
+    fetchAgents();
+  }, []);
 
   return (
     <div className="space-y-4">
@@ -40,7 +33,6 @@ export function AgentList() {
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
       >
         {agents.map((agent) => (
-          //<AgentCard key={agent.id} agent={agent} id={`5osplx_${index}`} />
           <AgentCard key={agent.id} agent={agent} />
         ))}
       </div>

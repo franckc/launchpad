@@ -35,6 +35,7 @@ model Agent {
   id            Int         @id @default(autoincrement())
   name          String
   config        Json
+  jobs          Job[]
   createdAt     DateTime    @default(now()) @map(name: "created_at")
   updatedAt     DateTime    @updatedAt @map(name: "updated_at")
   @@map(name: "agent")  
@@ -51,6 +52,7 @@ enum JobStatusType {
 model Job {
   id            Int         @id @default(autoincrement())
   agentId       Int         @map(name: "agent_id")
+  agent         Agent       @relation(fields: [agentId], references: [id])
   agent_config  Json
   task_config   Json
   status        JobStatusType

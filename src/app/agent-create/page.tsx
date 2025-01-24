@@ -91,11 +91,11 @@ export default function AgentCreate() {
       agentName,
       lifeExpectancyType,
       isHosted,
-      role,
-      goal,
-      backstory,
-      taskDescription,
-      expectedOutput,
+      role, // agent role
+      goal, // agent goal
+      backstory, // agent backstory
+      taskDescription, // task description
+      expectedOutput, // task expected output
       startTime,
       frequency,
       connectedService,

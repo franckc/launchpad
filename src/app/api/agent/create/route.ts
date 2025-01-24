@@ -40,6 +40,7 @@ export async function PUT(request: Request) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
+      agent_id: agent.id,
       agent_config: {
         'role': body.role,
         'goal': body.goal,

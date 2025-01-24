@@ -8,7 +8,7 @@ import { TrashIcon, ClockIcon } from "lucide-react";
 import { useRouter } from 'next/navigation'
 
 
-type Agent = Record<string, string>;
+type Agent = Record<string, any>;
 
 
 export function AgentCard({ agent }: { agent: Agent }) {
@@ -16,6 +16,8 @@ export function AgentCard({ agent }: { agent: Agent }) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
+      case "CREATED":
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-400";
       case "RUNNING":
         return "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-400";
       case "SCHEDULED":
@@ -37,8 +39,12 @@ export function AgentCard({ agent }: { agent: Agent }) {
   const handleStatusClick = (e: React.MouseEvent<Element>) => {
     e.stopPropagation();
     // FIXME: Should be something like agent/${agent.id}/status
-    router.push(`/agent-status`);
+    router.push(`/agent/${agent.id}/status`);
   };
+
+  // Defensicve code to handle the case where the agent has no job yet.
+  // Should not happen in production.
+  const latestJobStatus = agent.latestJob ? agent.latestJob.status : "";
 
   return (
     <Card
@@ -63,10 +69,10 @@ export function AgentCard({ agent }: { agent: Agent }) {
 
         <div className="mt-4 space-y-2">
           <Badge
-            className={`cursor-pointer ${getStatusColor(agent.status)}`}
+            className={`cursor-pointer ${getStatusColor(latestJobStatus)}`}
             onClick={handleStatusClick}
           >
-            {agent.status.replace("_", " ")}
+            {latestJobStatus.replace("_", " ")}
           </Badge>
 
           <div
