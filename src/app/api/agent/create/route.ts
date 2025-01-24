@@ -15,14 +15,40 @@ export async function PUT(request: Request) {
   const url = process.env.AI_ENGINE_URL + '/api/job/start';
   console.log('Calling /api/job/start on server at URL:', url);
 
+/*
+    const payload = {
+      agentHash,
+      agentName,
+      lifeExpectancyType,
+      isHosted,
+      role, // agent role
+      goal, // agent goal
+      backstory, // agent backstory
+      taskDescription, // task description
+      expectedOutput, // task expected output
+      startTime,
+      frequency,
+      connectedService,
+      notificationMethods,
+      additionalQuestions,
+    };
+*/
+
   const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      agent_config: {'key1': 'val1', 'key2': 'val2'},
-      task_config: {'key1': 'val1', 'key2': 'val2'},
+      agent_config: {
+        'role': body.role,
+        'goal': body.goal,
+        'backstory': body.backstory,
+      },
+      task_config: {
+        'description': body.taskDescription,
+        'expected_output': body.expectedOutput,
+      },
     }),
   });
 
