@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,37 +8,46 @@ import {
   ChevronDownIcon,
   ChevronUpIcon,
   MessageSquareIcon,
+  ClockIcon,
 } from "lucide-react";
+import { formatDateAgo } from "@/lib/utils";
+
+
+interface InboxItem {
+  id: number;
+  type: string;
+  status: string;
+  content: string;
+  agentName: string;
+  timestamp: string;
+}
+
+
 
 export function AgentInbox() {
   const [expandedItem, setExpandedItem] = useState(0);
 
-  const inboxItems = [
-    {
-      id: 1,
-      agentName: "Data Analysis Agent",
-      type: "OUTPUT",
-      content: "Analysis complete: Found 3 anomalies in the dataset",
-      timestamp: "2 minutes ago",
-      status: "RUNNING",
-    },
-    {
-      id: 2,
-      agentName: "Email Assistant",
-      type: "WAITING_FOR_FEEDBACK",
-      content: "Should I proceed with sending the weekly newsletter?",
-      timestamp: "5 minutes ago",
-      status: "WAITING_FOR_FEEDBACK",
-    },
-    {
-      id: 3,
-      agentName: "Document Processor",
-      type: "ACTIVITY",
-      content: "Processing new documents from Google Drive",
-      timestamp: "1 hour ago",
-      status: "SCHEDULED",
-    },
-  ];
+  const [inboxItems, setInboxItems] = useState<InboxItem[]>([]);
+
+  useEffect(() => {
+    const fetchAgents = async () => {
+      try {
+        // FIXME: dyanmic user id
+        const response = await fetch('/api/inbox/0');
+        if (response.ok) {
+          const data = await response.json();
+          setInboxItems(data);
+          console.log("FETCHED INBOX DATA", data)
+        } else {
+          console.error('Failed to fetch agents');
+        }
+      } catch (error) {
+        console.error('Error fetching agents:', error);
+      }
+    };
+
+    fetchAgents();
+  }, []);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -95,14 +104,16 @@ export function AgentInbox() {
                     >
                       {expandedItem === item.id
                         ? item.content
-                        : `${item.content.slice(0, 60)}...`}
+                        : item.content.length > 60 
+                          ?`${item.content.slice(0, 60)}...`
+                          : item.content}
                     </p>
-                    <p
-                      className="text-xs text-muted-foreground"
-                      id={`6h340q_${index}`}
+                    <div
+                      className="flex items-center text-sm text-muted-foreground"
                     >
-                      {item.timestamp}
-                    </p>
+                      <ClockIcon className="h-4 w-4 mr-1" />
+                      {formatDateAgo(item.timestamp)}
+                    </div>
                   </div>
                   <Button
                     variant="ghost"

@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TrashIcon, ClockIcon } from "lucide-react";
 import { useRouter } from 'next/navigation'
-import { getJobStatusColor, formatDate } from "@/lib/utils";
+import { getJobStatusColor, formatDateAgo } from "@/lib/utils";
 
 type Agent = Record<string, any>;
 
@@ -32,7 +32,6 @@ export function AgentCard({ agent }: { agent: Agent }) {
   return (
     <Card
       className="cursor-pointer hover:shadow-md transition-shadow"
-      // FIXME: Should be something like agent/${agent.id}/status
       onClick={() => router.push(`/agent/${agent.id}/status`)}
     >
       <CardContent className="p-4">
@@ -60,7 +59,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
               className="flex items-center text-sm text-muted-foreground"
             >
               <ClockIcon className="h-4 w-4 mr-1" />
-              {formatDate(latestJob.updatedAt)}
+              {formatDateAgo(latestJob.updatedAt)}
             </div>
           )}
         </div>

@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic'
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -55,7 +57,19 @@ const agentSchema = z.object({
   // ...other fields...
 });
 
-export default function AgentCreate() {
+interface Params {
+  id: string;
+}
+
+export default async function AgentCreate({
+  searchParams,
+}: {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
+}) {
+  const agentId = (await searchParams).id
+  const isEdit = !!agentId
+
+  const [isLoading, setIsLoading] = useState(isEdit);
   const [agentHash, setAgentHash] = useState("");
   const [lifeExpectancyType, setLifeExpectancyType] = useState("runs");
   const [isHosted, setIsHosted] = useState(true);
@@ -81,10 +95,37 @@ export default function AgentCreate() {
   const router = useRouter();
   const { toast } = useToast()
 
-
   useEffect(() => {
+
     generateAgentHash();
-  }, []);
+
+    const fetchAgent = async () => {
+      console.log("FETCHING DATA FOR AGENT ID", agentId)
+      try {
+        const response = await fetch(`/api/agent/${agentId}`);
+        if (response.ok) {
+          const data = await response.json();
+          console.log("DATA", data)
+          setAgentName(data.name);
+          setRole(data.config.role);
+          setGoal(data.config.goal);
+          setBackstory(data.config.backstory);
+          setTaskDescription(data.config.taskDescription);
+          setExpectedOutput(data.config.expectedOutput);
+          setIsLoading(false);
+        } else {
+          console.error('Failed to fetch data for agent id', agentId);
+        }
+      } catch (error) {
+        console.error('Error fetching data for agent id:', agentId, error);
+      }
+    };
+
+    // If it's an edit we got the aggentId. Load the data
+    if (isEdit) {
+      fetchAgent();
+    }
+  }, [agentId]);
 
   const generateAgentHash = () => {
     const timestamp = new Date().getTime();
@@ -137,13 +178,23 @@ export default function AgentCreate() {
     setExpectedOutputError("");
 
     try {
-      const response = await axios.put('/api/agent/create', payload);
-      console.log('Agent created successfully:', response.data);
-      console.log('Showing toast!');
-      toast({
-        title: "Agent successfully created",
-        description: "Name: " + agentName,
-      })
+      if (isEdit) {
+        // Existing Agent update. Note the rerun=1 search arg to kick-off a rerun
+        const response = await axios.post(`/api/agent/${agentId}/update?rerun=1`, payload);
+        console.log('Agent updated successfully:', response.data);
+        toast({
+          title: "Agent successfully updated and launched",
+          description: "Name: " + agentName,
+        })
+      } else {
+        // New Agent creation
+        const response = await axios.put('/api/agent/create', payload);
+        console.log('Agent created successfully:', response.data);
+        toast({
+          title: "Agent successfully created and launched",
+          description: "Name: " + agentName,
+        })
+      }
       router.push('/');
     } catch (error) {
       console.error('Error creating agent:', error);
@@ -154,6 +205,10 @@ export default function AgentCreate() {
       })
     }
   };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -167,7 +222,7 @@ export default function AgentCreate() {
             Back
           </Button>
         <h2 className="text-2xl font-bold">
-          Create New Agent
+          {isEdit ? "Edit Agent" : "Create New Agent"}
         </h2>
       </div>
 
@@ -501,7 +556,7 @@ export default function AgentCreate() {
 
           <Button className="w-full" onClick={handleSubmit}>
             <RocketIcon className="h-4 w-4 mr-2" />
-            Launch Agent
+            {isEdit ? "Save Changes and Launch Agent" : "Launch Agent"}
           </Button>
         </div>
       </div>

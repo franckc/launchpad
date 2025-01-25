@@ -24,9 +24,12 @@ export function getJobStatusColor(status: string) {
   }
 };
 
-export function formatDate(dateString: string) {
+export function formatDateAgo(dateString: string) {
   const pastDate = moment(dateString);
   const agoString = pastDate.fromNow();
   return agoString;
-  //return moment(dateString).format('MM/DD/YY h:mm:ss a');
+};
+
+export function formatDate(dateString: string) {
+  return moment(dateString).format('MM/DD/YY h:mm:ss a');
 };

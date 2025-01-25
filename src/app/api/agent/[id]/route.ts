@@ -8,7 +8,11 @@ export async function GET(request: Request, { params }: { params: { id: string }
         id: agentId
       },
       include: {
-        jobs: true,
+        jobs: {
+          orderBy: {
+            id: 'desc',
+          },
+        }
       }
     });
 
