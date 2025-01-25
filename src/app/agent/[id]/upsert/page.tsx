@@ -55,7 +55,7 @@ export default function AgentUpsert({ params }: { params: Params }) {
   const router = useRouter();
   const { toast } = useToast()
 
-  const agentId = params.id;
+  const agentId = parseInt(params.id);
   const isEdit = !!agentId
 
   const [isLoading, setIsLoading] = useState(isEdit);
@@ -82,7 +82,6 @@ export default function AgentUpsert({ params }: { params: Params }) {
   const [notificationMethods, setNotificationMethods] = useState({});
 
   useEffect(() => {
-
     const fetchAgent = async () => {
       try {
         const response = await fetch(`/api/agent/${agentId}`);
