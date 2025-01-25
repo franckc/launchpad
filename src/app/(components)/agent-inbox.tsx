@@ -37,7 +37,6 @@ export function AgentInbox() {
         if (response.ok) {
           const data = await response.json();
           setInboxItems(data);
-          console.log("FETCHED INBOX DATA", data)
         } else {
           console.error('Failed to fetch agents');
         }

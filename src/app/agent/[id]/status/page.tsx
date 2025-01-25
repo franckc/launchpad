@@ -86,7 +86,7 @@ export default function AgentStatus({ params }: { params: Params }) {
           <div>
             <Button
               variant="outline"
-              onClick={() => router.push("/agent-create?id=" + agentId)}
+              onClick={() => router.push(`/agent/${agentId}/upsert`)}
             >
               <PencilIcon className="h-4 w-4 mr-2" />
               Edit

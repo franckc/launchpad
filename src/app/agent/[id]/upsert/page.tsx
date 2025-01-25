@@ -36,17 +36,6 @@ import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast"
 import { z } from "zod"
 
-// Simple hash function
-const simpleHash = (str: string) => {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    const char = str.charCodeAt(i);
-    hash = (hash << 5) - hash + char;
-    hash = hash & hash; // Convert to 32-bit integer
-  }
-  return Math.abs(hash).toString(16).substring(0, 10);
-};
-
 const agentSchema = z.object({
   agentName: z.string().nonempty("Mandatory field"),
   role: z.string().nonempty("Mandatory field"),
@@ -61,16 +50,16 @@ interface Params {
   id: string;
 }
 
-export default async function AgentCreate({
-  searchParams,
-}: {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>
-}) {
-  const agentId = (await searchParams).id
+// Create (if id is set to 0) or Edit (if id > 0) an agent.
+export default function AgentUpsert({ params }: { params: Params }) {
+  const router = useRouter();
+  const { toast } = useToast()
+
+  const agentId = params.id;
   const isEdit = !!agentId
 
   const [isLoading, setIsLoading] = useState(isEdit);
-  const [agentHash, setAgentHash] = useState("");
+  const [agentHash, setAgentHash] = useState("0xAF79EF318");
   const [lifeExpectancyType, setLifeExpectancyType] = useState("runs");
   const [isHosted, setIsHosted] = useState(true);
   const [agentSummary, ] = useState("");
@@ -92,20 +81,13 @@ export default async function AgentCreate({
   const [connectedService, setConnectedService] = useState("");
   const [notificationMethods, setNotificationMethods] = useState({});
 
-  const router = useRouter();
-  const { toast } = useToast()
-
   useEffect(() => {
 
-    generateAgentHash();
-
     const fetchAgent = async () => {
-      console.log("FETCHING DATA FOR AGENT ID", agentId)
       try {
         const response = await fetch(`/api/agent/${agentId}`);
         if (response.ok) {
           const data = await response.json();
-          console.log("DATA", data)
           setAgentName(data.name);
           setRole(data.config.role);
           setGoal(data.config.goal);
@@ -125,14 +107,7 @@ export default async function AgentCreate({
     if (isEdit) {
       fetchAgent();
     }
-  }, [agentId]);
-
-  const generateAgentHash = () => {
-    const timestamp = new Date().getTime();
-    const random = Math.random().toString();
-    const hash = simpleHash(`${timestamp}-${random}`);
-    setAgentHash(hash);
-  };
+  }, []);
 
   const notificationPriorities = [
     { level: "FYI", description: "General information" },
@@ -243,7 +218,7 @@ export default async function AgentCreate({
                   <Input value={agentHash} disabled />
                   <Button
                     variant="outline"
-                    onClick={generateAgentHash}
+                    //onClick={generateAgentHash}
                   >
                     Regenerate
                   </Button>

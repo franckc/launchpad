@@ -16,7 +16,7 @@ export function Header() {
         <h1 className="text-2xl font-bold">
           Agent Launchpad
         </h1>
-        <Button onClick={() => router.push("/agent-create")}>
+        <Button onClick={() => router.push("/agent/0/upsert")}>
           <PlusIcon className="h-4 w-4 mr-2" />
           New Agent
         </Button>
