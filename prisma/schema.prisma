@@ -53,6 +53,7 @@ model Job {
   id            Int         @id @default(autoincrement())
   agentId       Int         @map(name: "agent_id")
   agent         Agent       @relation(fields: [agentId], references: [id])
+  objective     String
   agent_config  Json
   task_config   Json
   status        JobStatusType
