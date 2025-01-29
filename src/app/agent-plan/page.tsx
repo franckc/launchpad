@@ -16,7 +16,11 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-import { ArrowLeftIcon, SaveIcon } from "lucide-react";
+import{ Textarea } from "@/components/ui/textarea";
+
+import { Badge } from "@/components/ui/badge"
+
+import { ArrowLeftIcon, SaveIcon, TrashIcon, PlusIcon } from "lucide-react";
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast"
 
@@ -28,6 +32,7 @@ export default function AgentPlanner() {
   const [draftPlan, setDraftPlan] = useState([]);
 
   const handleCreatePlan = async () => {
+    console.log("Creating plan for objective:", objective);
     setLoading(true);
     try {
       const response = await fetch('/api/plan', {
@@ -61,6 +66,22 @@ export default function AgentPlanner() {
     }
   };
 
+  const handleInputChange = (index, field, value) => {
+    const updatedDraftPlan = [...draftPlan];
+    updatedDraftPlan[index][field] = value;
+    setDraftPlan(updatedDraftPlan);
+  };
+
+  const handleDeleteRow = (index) => {
+    const updatedDraftPlan = draftPlan.filter((_, i) => i !== index);
+    setDraftPlan(updatedDraftPlan);
+  };
+
+  const handleAddRow = () => {
+    const newTask = { description: '', output: '', role: '', tools: [] };
+    setDraftPlan([...draftPlan, newTask]);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center space-x-4">
@@ -90,27 +111,62 @@ export default function AgentPlanner() {
             />
           </div>
 
-          {draftPlan && (
+          {draftPlan.length > 0 && (
             <div className="space-y-2">
               <Table>
-                <TableCaption>Agent plan.</TableCaption>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Task</TableHead>
-                    <TableHead>Output</TableHead>
-                    <TableHead>Role</TableHead>
-                    <TableHead>Tools</TableHead>
+                    <TableHead style={{ width: '35%' }}>Task</TableHead>
+                    <TableHead style={{ width: '35%' }}>Output</TableHead>
+                    <TableHead style={{ width: '10%' }}>Role</TableHead>
+                    <TableHead style={{ width: '20%' }}>Tools</TableHead>
+                    <TableHead>Action</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {draftPlan.map((task) => (
-                    <TableRow key={task.ID}>
-                      <TableCell>{task.description}</TableCell>
-                      <TableCell>{task.output}</TableCell>
-                      <TableCell>{task.role}</TableCell>
-                      <TableCell>{task.tools.join(", ")}</TableCell>
+                  {draftPlan.map((task, index) => (
+                    <TableRow key={index}>
+                      <TableCell style={{ width: '35%', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        <Textarea
+                          value={task.description}
+                          onChange={(e) => handleInputChange(index, 'description', e.target.value)}
+                          wrap="hard"
+                        />
+                      </TableCell>
+                      <TableCell style={{ width: '35%', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        <Textarea
+                          value={task.output}
+                          onChange={(e) => handleInputChange(index, 'output', e.target.value)}
+                        />
+                      </TableCell>
+                      <TableCell style={{ width: '10%' }}>
+                        <Input
+                          value={task.role}
+                          onChange={(e) => handleInputChange(index, 'role', e.target.value)}
+                        />
+                      </TableCell>
+                      <TableCell style={{ width: '15%' }}>
+                        <div className="flex flex-wrap gap-1">
+                          {task.tools.map((tool, toolIndex) => (
+                            <Badge key={toolIndex}>{tool}</Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Button variant="ghost" onClick={() => handleDeleteRow(index)}>
+                          <TrashIcon className="h-4 w-4" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center">
+                      <Button variant="ghost" onClick={handleAddRow}>
+                        <PlusIcon className="h-4 w-4 mr-2" />
+                        Add Row
+                      </Button>
+                    </TableCell>
+                  </TableRow>
                 </TableBody>
               </Table>
             </div>
