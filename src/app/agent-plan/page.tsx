@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label";
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -20,7 +19,7 @@ import{ Textarea } from "@/components/ui/textarea";
 
 import { Badge } from "@/components/ui/badge"
 
-import { ArrowLeftIcon, SaveIcon, TrashIcon, PlusIcon, GripVerticalIcon } from "lucide-react";
+import { ArrowLeftIcon, Loader2, TrashIcon, PlusIcon, GripVerticalIcon, CirclePlayIcon, SquarePenIcon } from "lucide-react";
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast"
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
@@ -28,11 +27,11 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 
 const ItemType = 'ROW';
 
-const DraggableRow = ({ index, moveRow, children }) => {
+const DraggableRow: React.FC<{ index: number; moveRow: (dragIndex: number, hoverIndex: number) => void; children: React.ReactNode }> = ({ index, moveRow, children }) => {
   const ref = React.useRef(null);
   const [, drop] = useDrop({
     accept: ItemType,
-    hover(item) {
+    hover(item: { index: number }) {
       if (!ref.current) {
         return;
       }
@@ -67,8 +66,8 @@ export default function AgentPlanner() {
   const { toast } = useToast()
   
   const [objective, setObjective] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [draftPlan, setDraftPlan] = useState([]);
+  const [isLoading, setLoading] = useState(false);
+  const [draftPlan, setDraftPlan] = useState<Task[]>([]);
 
   const handleCreatePlan = async () => {
     console.log("Creating plan for objective:", objective);
@@ -105,13 +104,66 @@ export default function AgentPlanner() {
     }
   };
 
-  const handleInputChange = (index, field, value) => {
+  const handleRunPlan = async () => {
+    console.log("Creating plan for objective:", objective);
+    // setLoading(true);
+    // try {
+    //   const response = await fetch('/api/plan', {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json'
+    //     },
+    //     body: JSON.stringify({ objective })
+    //   });
+
+    //   if (response.ok) {
+    //     const data = await response.json();
+    //     setDraftPlan(data.plan);
+    //   } else {
+    //     console.error('Failed to create plan');
+    //     toast({
+    //       variant: "destructive",
+    //       title: "Uh oh! Something went wrong.",
+    //       description: "There was a problem with your agent planning.",
+    //     })
+    //   }
+    // } catch (error) {
+    //   console.error('Error creating plan:', error);
+    //   toast({
+    //     variant: "destructive",
+    //     title: "Uh oh! Something went wrong.",
+    //     description: "There was a problem with your agent planning.",
+    //   })
+    //} finally {
+      setLoading(false);
+    //}
+  };
+
+  interface Task {
+    description: string;
+    output: string;
+    role: string;
+    tools: string[];
+  }
+
+  const handleInputChange = (index: number, field: keyof Task, value: string) => {
     const updatedDraftPlan = [...draftPlan];
-    updatedDraftPlan[index][field] = value;
+    if (field === 'tools') {
+      updatedDraftPlan[index][field] = value.split(',').map(tool => tool.trim());
+    } else {
+      updatedDraftPlan[index][field] = value;
+    }
     setDraftPlan(updatedDraftPlan);
   };
 
-  const handleDeleteRow = (index) => {
+  interface Task {
+    description: string;
+    output: string;
+    role: string;
+    tools: string[];
+  }
+
+  const handleDeleteRow = (index: number) => {
     const updatedDraftPlan = draftPlan.filter((_, i) => i !== index);
     setDraftPlan(updatedDraftPlan);
   };
@@ -121,7 +173,11 @@ export default function AgentPlanner() {
     setDraftPlan([...draftPlan, newTask]);
   };
 
-  const moveRow = (dragIndex, hoverIndex) => {
+  interface DragItem {
+    index: number;
+  }
+
+  const moveRow = (dragIndex: number, hoverIndex: number) => {
     const updatedDraftPlan = [...draftPlan];
     const [movedRow] = updatedDraftPlan.splice(dragIndex, 1);
     updatedDraftPlan.splice(hoverIndex, 0, movedRow);
@@ -223,14 +279,25 @@ export default function AgentPlanner() {
             )}
 
             <div className="flex justify-end">
-              <Button onClick={handleCreatePlan} disabled={loading}>
-                {loading ? (
-                  <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                ) : (
-                  <SaveIcon className="h-4 w-4 mr-2" />
-                )}
-                Create Plan
-              </Button>
+              {draftPlan.length > 0 ? (
+                <Button onClick={handleRunPlan} disabled={isLoading}>
+                  {isLoading ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <CirclePlayIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Run Plan
+                </Button>
+              ) : (
+                <Button onClick={handleCreatePlan} disabled={isLoading}>
+                  {isLoading ? (
+                    <Loader2 className="animate-spin" />
+                  ) : (
+                    <SquarePenIcon className="h-4 w-4 mr-2" />
+                  )}
+                  Create Plan
+                </Button>
+              )}
             </div>
 
           </CardContent>
