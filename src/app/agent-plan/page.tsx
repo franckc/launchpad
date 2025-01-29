@@ -20,9 +20,48 @@ import{ Textarea } from "@/components/ui/textarea";
 
 import { Badge } from "@/components/ui/badge"
 
-import { ArrowLeftIcon, SaveIcon, TrashIcon, PlusIcon } from "lucide-react";
+import { ArrowLeftIcon, SaveIcon, TrashIcon, PlusIcon, GripVerticalIcon } from "lucide-react";
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast"
+import { DndProvider, useDrag, useDrop } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
+
+const ItemType = 'ROW';
+
+const DraggableRow = ({ index, moveRow, children }) => {
+  const ref = React.useRef(null);
+  const [, drop] = useDrop({
+    accept: ItemType,
+    hover(item) {
+      if (!ref.current) {
+        return;
+      }
+      const dragIndex = item.index;
+      const hoverIndex = index;
+      if (dragIndex === hoverIndex) {
+        return;
+      }
+      moveRow(dragIndex, hoverIndex);
+      item.index = hoverIndex;
+    },
+  });
+
+  const [{ isDragging }, drag] = useDrag({
+    type: ItemType,
+    item: { index },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  });
+
+  drag(drop(ref));
+
+  return (
+    <tr ref={ref} style={{ opacity: isDragging ? 0.5 : 1 }}>
+      {children}
+    </tr>
+  );
+};
 
 export default function AgentPlanner() {
   const { toast } = useToast()
@@ -82,109 +121,121 @@ export default function AgentPlanner() {
     setDraftPlan([...draftPlan, newTask]);
   };
 
+  const moveRow = (dragIndex, hoverIndex) => {
+    const updatedDraftPlan = [...draftPlan];
+    const [movedRow] = updatedDraftPlan.splice(dragIndex, 1);
+    updatedDraftPlan.splice(hoverIndex, 0, movedRow);
+    setDraftPlan(updatedDraftPlan);
+  };
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center space-x-4">
-        <Button variant="ghost" className="p-0">
-          <ArrowLeftIcon className="h-4 w-4 mr-2" />
-          <Link href="/">Back</Link>
-        </Button>
-        <h2 className="text-2xl font-bold">
-          Agent Planner
-        </h2>
-      </div>
+    <DndProvider backend={HTML5Backend}>
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <Button variant="ghost" className="p-0">
+            <ArrowLeftIcon className="h-4 w-4 mr-2" />
+            <Link href="/">Back</Link>
+          </Button>
+          <h2 className="text-2xl font-bold">
+            Agent Planner
+          </h2>
+        </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Agent Configuration</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <Label htmlFor="objective">
-              Agent Objective
-            </Label>
-            <Input
-              id="objective"
-              placeholder="Enter agent objective"
-              value={objective}
-              onChange={(e) => setObjective(e.target.value)}
-            />
-          </div>
-
-          {draftPlan.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Agent Configuration</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead style={{ width: '35%' }}>Task</TableHead>
-                    <TableHead style={{ width: '35%' }}>Output</TableHead>
-                    <TableHead style={{ width: '10%' }}>Role</TableHead>
-                    <TableHead style={{ width: '20%' }}>Tools</TableHead>
-                    <TableHead>Action</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {draftPlan.map((task, index) => (
-                    <TableRow key={index}>
-                      <TableCell style={{ width: '35%', whiteSpace: 'normal', wordWrap: 'break-word' }}>
-                        <Textarea
-                          value={task.description}
-                          onChange={(e) => handleInputChange(index, 'description', e.target.value)}
-                          wrap="hard"
-                        />
-                      </TableCell>
-                      <TableCell style={{ width: '35%', whiteSpace: 'normal', wordWrap: 'break-word' }}>
-                        <Textarea
-                          value={task.output}
-                          onChange={(e) => handleInputChange(index, 'output', e.target.value)}
-                        />
-                      </TableCell>
-                      <TableCell style={{ width: '10%' }}>
-                        <Input
-                          value={task.role}
-                          onChange={(e) => handleInputChange(index, 'role', e.target.value)}
-                        />
-                      </TableCell>
-                      <TableCell style={{ width: '15%' }}>
-                        <div className="flex flex-wrap gap-1">
-                          {task.tools.map((tool, toolIndex) => (
-                            <Badge key={toolIndex}>{tool}</Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Button variant="ghost" onClick={() => handleDeleteRow(index)}>
-                          <TrashIcon className="h-4 w-4" />
+              <Label htmlFor="objective">
+                Agent Objective
+              </Label>
+              <Input
+                id="objective"
+                placeholder="Enter agent objective"
+                value={objective}
+                onChange={(e) => setObjective(e.target.value)}
+              />
+            </div>
+
+            {draftPlan.length > 0 && (
+              <div className="space-y-2">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead style={{ width: '35%' }}>Task</TableHead>
+                      <TableHead style={{ width: '35%' }}>Output</TableHead>
+                      <TableHead style={{ width: '10%' }}>Role</TableHead>
+                      <TableHead style={{ width: '20%' }}>Tools</TableHead>
+                      <TableHead>Action</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {draftPlan.map((task, index) => (
+                      <DraggableRow key={index} index={index} moveRow={moveRow}>
+                        <TableCell style={{ width: '35%', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                          <Textarea
+                            value={task.description}
+                            onChange={(e) => handleInputChange(index, 'description', e.target.value)}
+                            wrap="hard"
+                          />
+                        </TableCell>
+                        <TableCell style={{ width: '35%', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                          <Textarea
+                            value={task.output}
+                            onChange={(e) => handleInputChange(index, 'output', e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell style={{ width: '10%' }}>
+                          <Input
+                            value={task.role}
+                            onChange={(e) => handleInputChange(index, 'role', e.target.value)}
+                          />
+                        </TableCell>
+                        <TableCell style={{ width: '15%' }}>
+                          <div className="flex flex-wrap gap-1">
+                            {task.tools.map((tool, toolIndex) => (
+                              <Badge key={toolIndex}>{tool}</Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center space-x-2">
+                            <Button variant="ghost" onClick={() => handleDeleteRow(index)}>
+                              <TrashIcon className="h-4 w-4" />
+                            </Button>
+                            <GripVerticalIcon className="h-4 w-4 cursor-move" />
+                          </div>
+                        </TableCell>
+                      </DraggableRow>
+                    ))}
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center">
+                        <Button variant="ghost" onClick={handleAddRow}>
+                          <PlusIcon className="h-4 w-4 mr-2" />
+                          Add Row
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))}
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center">
-                      <Button variant="ghost" onClick={handleAddRow}>
-                        <PlusIcon className="h-4 w-4 mr-2" />
-                        Add Row
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+
+            <div className="flex justify-end">
+              <Button onClick={handleCreatePlan} disabled={loading}>
+                {loading ? (
+                  <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
+                ) : (
+                  <SaveIcon className="h-4 w-4 mr-2" />
+                )}
+                Create Plan
+              </Button>
             </div>
-          )}
 
-          <div className="flex justify-end">
-            <Button onClick={handleCreatePlan} disabled={loading}>
-              {loading ? (
-                <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-              ) : (
-                <SaveIcon className="h-4 w-4 mr-2" />
-              )}
-              Create Plan
-            </Button>
-          </div>
-
-        </CardContent>
-      </Card>
-    </div>
+          </CardContent>
+        </Card>
+      </div>
+    </DndProvider>
   );
 }
