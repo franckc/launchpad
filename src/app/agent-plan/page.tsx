@@ -250,10 +250,6 @@ export default function AgentPlanner() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
-                <Label>Hash</Label>
-              </div>
-
-              <div className="space-y-2">
                 <Label htmlFor="name">
                   Name
                 </Label>
@@ -263,6 +259,14 @@ export default function AgentPlanner() {
                   onChange={(e) => setAgentName(e.target.value)}
                   className={agentNameError ? "bg-red-100" : ""}
                 />
+              </div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Hash</Label>
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  0xFE701AD1F3A1B2C3
+                </p>
               </div>
 
               <div className="space-y-4">
