@@ -8,16 +8,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import{ Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeftIcon, Loader2, TrashIcon, PlusIcon, GripVerticalIcon, CirclePlayIcon, SquarePenIcon } from "lucide-react";
+import { RocketIcon, ArrowLeftIcon, Loader2, TrashIcon, PlusIcon, GripVerticalIcon, CirclePlayIcon, SquarePenIcon, SettingsIcon } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast"
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { json } from 'stream/consumers';
 
 const ItemType = 'ROW';
 
@@ -83,6 +85,14 @@ export default function AgentPlanner() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [tools, setTools] = useState<string[]>([]);
   const [draftPlan, setDraftPlan] = useState<Task[]>([]);
+
+  const [agentName, setAgentName] = useState("");
+  const [agentNameError, setAgentNameError] = useState("");
+  const [lifeExpectancyType, setLifeExpectancyType] = useState("runs");
+  const [isHosted, setIsHosted] = useState(true);
+  const [role, setRole] = useState("");
+  const [frequency, setFrequency] = useState("");
+
 
   const handleCreatePlan = async () => {
     console.log("Creating plan for objective:", objective);
@@ -155,8 +165,8 @@ export default function AgentPlanner() {
         tools: task.tools,
       });
     }
-    // Use the first 20 characters of the objective as the agent name 
-    const agentName = objective.replace(/ /g, '-').slice(0, 20);
+    // Use the first 20 characters of the objective as the agent name
+    //const agentName = objective.replace(/ /g, '-').slice(0, 20);
 
     const payload = {
       agentName,
@@ -220,7 +230,6 @@ export default function AgentPlanner() {
   };
 
   return (
-    <DndProvider backend={HTML5Backend}>
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
           <Button variant="ghost" className="p-0">
@@ -231,16 +240,124 @@ export default function AgentPlanner() {
             Agent Planner
           </h2>
         </div>
+        <div className="col-span-2 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <SettingsIcon className="h-5 w-5 mr-2" />
+                Configuration
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label>Hash</Label>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="name">
+                  Name
+                </Label>
+                <Input
+                  placeholder="Enter a name for your agent"
+                  value={agentName}
+                  onChange={(e) => setAgentName(e.target.value)}
+                  className={agentNameError ? "bg-red-100" : ""}
+                />
+              </div>
+
+              <div className="space-y-4">
+                <Label>Life Expectancy</Label>
+                <RadioGroup
+                  defaultValue="runs"
+                  onValueChange={setLifeExpectancyType}
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="runs" />
+                    <Label htmlFor="runs">
+                      Number of Runs
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="calendar" />
+                    <Label htmlFor="calendar">
+                      Calendar Based
+                    </Label>
+                  </div>
+                </RadioGroup>
+                {lifeExpectancyType === "runs" ? (
+                  <Input
+                    type="number"
+                    placeholder="Number of runs"
+                    min="1"
+                  />
+                ) : (
+                  <Input type="date" />
+                )}
+              </div>
+
+              <div className="space-y-4">
+                <Label>Runtime Schedule</Label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Start Time</Label>
+                    <Input
+                      type="time"
+                      //value={startTime}
+                      //onChange={(e) => setStartTime(e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <Label>Frequency</Label>
+                    <Select onValueChange={setFrequency}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select frequency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="hourly">
+                          Hourly
+                        </SelectItem>
+                        <SelectItem value="daily">
+                          Daily
+                        </SelectItem>
+                        <SelectItem value="weekly">
+                          Weekly
+                        </SelectItem>
+                        <SelectItem value="monthly">
+                          Monthly
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Hosted Environment</Label>
+                  <Switch
+                    checked={isHosted}
+                    onCheckedChange={setIsHosted}
+                  />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  {isHosted
+                    ? "Agent will run on our secure cloud infrastructure"
+                    : "Agent will run on your private LLM instance"}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         <Card>
           <CardHeader>
-            <CardTitle>Agent Configuration</CardTitle>
+              <CardTitle className="flex items-center">
+                <RocketIcon className="h-5 w-5 mr-2" />
+                Objective
+              </CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             <div className="space-y-2">
-              <Label htmlFor="objective">
-                Agent Objective
-              </Label>
               <Input
                 id="objective"
                 placeholder="Enter agent objective"
@@ -250,47 +367,66 @@ export default function AgentPlanner() {
             </div>
 
             {draftPlan.length > 0 && (
+              <DndProvider backend={HTML5Backend}>
+
               <div className="space-y-2">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead style={{ width: '35%' }}>Task</TableHead>
-                      <TableHead style={{ width: '35%' }}>Output</TableHead>
-                      <TableHead style={{ width: '10%' }}>Role</TableHead>
-                      <TableHead style={{ width: '20%' }}>Tools</TableHead>
+                      <TableHead>Task</TableHead>
+                      <TableHead>Output</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Tools</TableHead>
+                      <TableHead>Notification</TableHead>
                       <TableHead>Action</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {draftPlan.map((task, index) => (
                       <DraggableRow key={index} index={index} moveRow={moveRow}>
-                        <TableCell style={{ width: '35%', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        <TableCell style={{ minHeight: '200px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
                           <Textarea
-                            value={task.description}
-                            onChange={(e) => handleInputChange(index, 'description', e.target.value)}
-                            wrap="hard"
+                          value={task.description}
+                          onChange={(e) => handleInputChange(index, 'description', e.target.value)}
+                          wrap="hard"
                           />
                         </TableCell>
-                        <TableCell style={{ width: '35%', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        <TableCell style={{ minHeight: '200px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
                           <Textarea
                             value={task.output}
                             onChange={(e) => handleInputChange(index, 'output', e.target.value)}
                           />
                         </TableCell>
-                        <TableCell style={{ width: '10%' }}>
+                        <TableCell style={{ width: '12%' }}>
                           <Input
                             value={task.role}
                             onChange={(e) => handleInputChange(index, 'role', e.target.value)}
                           />
                         </TableCell>
-                        <TableCell style={{ width: '15%' }}>
+                        <TableCell style={{ width: '8%' }}>
                           <div className="flex flex-wrap gap-1">
                             {task.tools.map((tool, toolIndex) => (
                               <Badge key={toolIndex}>{tool}</Badge>
                             ))}
                           </div>
                         </TableCell>
-                        <TableCell>
+                        <TableCell style={{ width: '8%' }}>
+                          <Select>
+                            <SelectTrigger>
+                              <SelectValue placeholder="None" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Select method</SelectLabel>
+                                <SelectItem value="None">None</SelectItem>
+                                <SelectItem value="Email">Email</SelectItem>
+                                <SelectItem value="SMS">SMS</SelectItem>
+                                <SelectItem value="Call">Call</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell style={{ width: '5%' }}>
                           <div className="flex items-center space-x-2">
                             <Button variant="ghost" onClick={() => handleDeleteRow(index)}>
                               <TrashIcon className="h-4 w-4" />
@@ -311,6 +447,8 @@ export default function AgentPlanner() {
                   </TableBody>
                 </Table>
               </div>
+
+              </DndProvider>
             )}
 
             <div className="flex justify-end">
@@ -338,6 +476,5 @@ export default function AgentPlanner() {
           </CardContent>
         </Card>
       </div>
-    </DndProvider>
   );
 }
