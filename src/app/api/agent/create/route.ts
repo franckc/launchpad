@@ -13,6 +13,7 @@ export async function PUT(request: Request) {
     config: body,
   }});
 
+  console.log("BODY", body);
   // Call the AI engine to enqueue an agent run.
   const response = await enqueue_job(agent.id, body);
   if (!response.ok) {

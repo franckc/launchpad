@@ -1,29 +1,23 @@
 'use client';
 
+import axios from 'axios';
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import{ Textarea } from "@/components/ui/textarea";
-
 import { Badge } from "@/components/ui/badge"
-
 import { ArrowLeftIcon, Loader2, TrashIcon, PlusIcon, GripVerticalIcon, CirclePlayIcon, SquarePenIcon } from "lucide-react";
+
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast"
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { json } from 'stream/consumers';
 
 const ItemType = 'ROW';
 
@@ -62,11 +56,32 @@ const DraggableRow: React.FC<{ index: number; moveRow: (dragIndex: number, hover
   );
 };
 
+interface Role {
+  title: string;
+  goal: string;
+  backstory: string;
+}
+
+interface Tools {
+  name: string;
+  description: string;
+}
+
+interface Task {
+  description: string;
+  output: string;
+  role: string;
+  tools: string[]; // list of tool names
+}
+
 export default function AgentPlanner() {
+  const router = useRouter();
   const { toast } = useToast()
   
   const [objective, setObjective] = useState('');
   const [isLoading, setLoading] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [tools, setTools] = useState<string[]>([]);
   const [draftPlan, setDraftPlan] = useState<Task[]>([]);
 
   const handleCreatePlan = async () => {
@@ -83,7 +98,9 @@ export default function AgentPlanner() {
 
       if (response.ok) {
         const data = await response.json();
-        setDraftPlan(data.plan);
+        setRoles(data.plan.roles); // These are all the roles available in the AI engine
+        setTools(data.plan.tools); // These are all the tools available in the AI engine
+        setDraftPlan(data.plan.tasks);
       } else {
         console.error('Failed to create plan');
         toast({
@@ -105,46 +122,71 @@ export default function AgentPlanner() {
   };
 
   const handleRunPlan = async () => {
-    console.log("Creating plan for objective:", objective);
-    // setLoading(true);
-    // try {
-    //   const response = await fetch('/api/plan', {
-    //     method: 'POST',
-    //     headers: {
-    //       'Content-Type': 'application/json'
-    //     },
-    //     body: JSON.stringify({ objective })
-    //   });
+    console.log("Preparing agent creation and launch");
 
-    //   if (response.ok) {
-    //     const data = await response.json();
-    //     setDraftPlan(data.plan);
-    //   } else {
-    //     console.error('Failed to create plan');
-    //     toast({
-    //       variant: "destructive",
-    //       title: "Uh oh! Something went wrong.",
-    //       description: "There was a problem with your agent planning.",
-    //     })
-    //   }
-    // } catch (error) {
-    //   console.error('Error creating plan:', error);
-    //   toast({
-    //     variant: "destructive",
-    //     title: "Uh oh! Something went wrong.",
-    //     description: "There was a problem with your agent planning.",
-    //   })
-    //} finally {
-      setLoading(false);
-    //}
+    // Task:
+    // description: string;
+    // output: string;
+    // role: string;
+    // tools: string[];
+
+    // Generate the agent and task config based on the draft plan and the roles.
+    const agent_config = [];
+    const task_config = [];
+    for (const task of draftPlan) {
+      const role = roles.find(r => r.title === task.role);
+      if (!role) {
+        console.error('Role not found for task:', task);
+        toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: "There was a problem with your agent creation.",
+        })
+        return;
+      }
+      agent_config.push({
+        role: role.title,
+        goal: role.goal,
+        backstory: role.backstory,
+      });
+      task_config.push({
+        description: task.description,
+        expected_output: task.output, // Note: name change since what's what the AI engine expects
+        tools: task.tools,
+      });
+    }
+    // Use the first 20 characters of the objective as the agent name 
+    const agentName = objective.replace(/ /g, '-').slice(0, 20);
+
+    const payload = {
+      agentName,
+      objective,
+      agent_config,
+      task_config,
+    };
+    console.log("PAYLOAD", JSON.stringify(payload, null, 4));
+
+    setLoading(true);
+
+    try {
+      // New Agent creation
+      const response = await axios.put('/api/agent/create', payload);
+      console.log('Agent created successfully:', response.data);
+      toast({
+        title: "Agent successfully created and launched",
+        description: "Name: " + agentName,
+      })
+      router.push('/');
+    } catch (error) {
+      console.error('Error creating agent:', error);
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem with your agent creation.",
+      })
+    }
+    setLoading(false);
   };
-
-  interface Task {
-    description: string;
-    output: string;
-    role: string;
-    tools: string[];
-  }
 
   const handleInputChange = (index: number, field: keyof Task, value: string) => {
     const updatedDraftPlan = [...draftPlan];
@@ -155,13 +197,6 @@ export default function AgentPlanner() {
     }
     setDraftPlan(updatedDraftPlan);
   };
-
-  interface Task {
-    description: string;
-    output: string;
-    role: string;
-    tools: string[];
-  }
 
   const handleDeleteRow = (index: number) => {
     const updatedDraftPlan = draftPlan.filter((_, i) => i !== index);

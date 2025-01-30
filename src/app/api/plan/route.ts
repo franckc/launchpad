@@ -43,8 +43,7 @@ export async function POST(request: Request) {
     throw new Error('Failed to get plan from the AI engine.');
   }
 
+  // Just pass thru the response from the AI engine.
   const data = await response.json();
-  const plan = data.plan;
-
-  return Response.json({ status: 'ok', plan });
+  return Response.json({ status: 'ok', ...data });
 }
