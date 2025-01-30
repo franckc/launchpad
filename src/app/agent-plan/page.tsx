@@ -377,9 +377,9 @@ export default function AgentPlanner() {
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Task</TableHead>
-                      <TableHead>Output</TableHead>
-                      <TableHead>Role</TableHead>
+                      <TableHead style={{ width: '35%' }}>Task</TableHead>
+                      <TableHead style={{ width: '35%' }}>Output</TableHead>
+                      <TableHead style={{ width: '10%' }}>Role</TableHead>
                       <TableHead>Tools</TableHead>
                       <TableHead>Notification</TableHead>
                       <TableHead>Action</TableHead>
@@ -388,33 +388,35 @@ export default function AgentPlanner() {
                   <TableBody>
                     {draftPlan.map((task, index) => (
                       <DraggableRow key={index} index={index} moveRow={moveRow}>
-                        <TableCell style={{ minHeight: '200px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        <TableCell style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
                           <Textarea
+                          style={{ height: '100px' }}
                           value={task.description}
                           onChange={(e) => handleInputChange(index, 'description', e.target.value)}
                           wrap="hard"
                           />
                         </TableCell>
-                        <TableCell style={{ minHeight: '200px', whiteSpace: 'normal', wordWrap: 'break-word' }}>
+                        <TableCell style={{ whiteSpace: 'normal', wordWrap: 'break-word' }}>
                           <Textarea
+                            style={{ height: '100px' }}
                             value={task.output}
                             onChange={(e) => handleInputChange(index, 'output', e.target.value)}
                           />
                         </TableCell>
-                        <TableCell style={{ width: '12%' }}>
+                        <TableCell>
                           <Input
                             value={task.role}
                             onChange={(e) => handleInputChange(index, 'role', e.target.value)}
                           />
                         </TableCell>
-                        <TableCell style={{ width: '8%' }}>
+                        <TableCell>
                           <div className="flex flex-wrap gap-1">
                             {task.tools.map((tool, toolIndex) => (
                               <Badge key={toolIndex}>{tool}</Badge>
                             ))}
                           </div>
                         </TableCell>
-                        <TableCell style={{ width: '8%' }}>
+                        <TableCell>
                           <Select>
                             <SelectTrigger>
                               <SelectValue placeholder="None" />
@@ -430,8 +432,8 @@ export default function AgentPlanner() {
                             </SelectContent>
                           </Select>
                         </TableCell>
-                        <TableCell style={{ width: '5%' }}>
-                          <div className="flex items-center space-x-2">
+                        <TableCell>
+                          <div className="flex items-center">
                             <Button variant="ghost" onClick={() => handleDeleteRow(index)}>
                               <TrashIcon className="h-4 w-4" />
                             </Button>
