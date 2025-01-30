@@ -1,5 +1,8 @@
 import { draft_plan } from '@/lib/ai-engine';
 
+
+const MOCK = false
+
 // makes request to AI engine to get a plan for the given objective and returns it.
 export async function POST(request: Request) {
   const body = await request.json();
@@ -7,13 +10,16 @@ export async function POST(request: Request) {
 
   // Call the AI engine to get the plan for the given objective.
   // Just pass thru the response from the AI engine.
-  // const response = await draft_plan(objective);
-  // if (!response.ok) {
-  //   throw new Error('Failed to get plan from the AI engine.');
-  // }
-  // const data = await response.json();
+  if (!MOCK) {
+    const response = await draft_plan(objective);
+    if (!response.ok) {
+      throw new Error('Failed to get plan from the AI engine.');
+    }
+    const data = await response.json();
+    return Response.json({ status: 'ok', ...data });
+  }
 
-  const data = {
+  const mock_data = {
     "plan": {
         "objective": "An aspirational sportswear brand, Lululemon, would like to launch a tiered membership for it's most loyal customers. It wants to show the value of community while being a global brand and having different membership tiers. I would like to determine the mission, vision, values and overall communication strategy. Do some research and send me an email with a short summary.",
         "roles": [
@@ -166,6 +172,6 @@ export async function POST(request: Request) {
             }
         ]
     }
-}
-return Response.json({ status: 'ok', ...data });
+  }
+  return Response.json({ status: 'ok', ...mock_data });
 }

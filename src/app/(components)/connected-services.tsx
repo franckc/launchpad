@@ -10,6 +10,7 @@ import {
   DatabaseIcon,
   TableIcon,
   BoxIcon,
+  BlocksIcon,
 } from "lucide-react";
 
 export function ConnectedServices() {
@@ -25,8 +26,9 @@ export function ConnectedServices() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-xl">
-          Connected Services
+        <CardTitle className="flex items-center space-x-2">
+          <BlocksIcon className="h-5 w-5" />
+          <span>Connected Services</span>
         </CardTitle>
       </CardHeader>
       <CardContent>

@@ -18,6 +18,7 @@ interface Job {
 interface Agent {
   config: {
     agentName: string;
+    objective: string;
   };
   jobs: Job[];
 }
@@ -82,6 +83,14 @@ export default function AgentStatus({ params }: { params: Params }) {
           </CardTitle>
         </CardHeader>
 
+        <CardContent >
+            <div className="text-sm text-muted-foreground">
+              Objective
+            </div>
+            <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+              {agent.config.objective}
+            </div>
+        </CardContent>
         <CardContent>
           <div>
             <Button
@@ -131,7 +140,7 @@ export default function AgentStatus({ params }: { params: Params }) {
           </div>
           
           <div>
-            <Button variant="outline">
+            <Button disabled variant="outline">
               <PauseIcon className="h-4 w-4 mr-2" />
               Pause
             </Button>

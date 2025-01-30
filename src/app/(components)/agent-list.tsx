@@ -2,6 +2,8 @@
 
 import React, { useEffect, useState } from "react";
 import { AgentCard } from "./agent-card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { BookCopyIcon } from "lucide-react";
 
 export function AgentList() {
   interface Agent {
@@ -31,17 +33,20 @@ export function AgentList() {
   }, []);
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">
-        My Agents
-      </h2>
-      <div
-        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-      >
-        {agents.map((agent) => (
-          <AgentCard key={agent.id} agent={agent} />
-        ))}
-      </div>
-    </div>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center space-x-2">
+          <BookCopyIcon className="h-5 w-5" />
+          <span>My Agents</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {agents.map((agent) => (
+            <AgentCard key={agent.id} agent={agent} />
+          ))}
+        </div>
+      </CardContent>
+    </Card>
   );
 }
