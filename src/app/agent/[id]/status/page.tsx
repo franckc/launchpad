@@ -11,7 +11,10 @@ import { getJobStatusColor, formatDate, formatDateAgo } from "@/lib/utils";
 
 interface Job {
   status: string;
-  output: string;
+  // backward compatibility. Old output only were a string
+  output: string | Record<string, any>;
+  agent_config: any;
+  task_config: any;
   updatedAt: string;
 }
 
@@ -159,7 +162,43 @@ export default function AgentStatus({ params }: { params: Params }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
-            <span>Runs output</span>
+            <span>Run output</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {agent.jobs.length ? (
+            agent.jobs.map((job, index) => (
+              <React.Fragment key={index}>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-l">
+                      <b>Run date</b>
+                    </div>
+                    <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
+                      {formatDate(job.updatedAt)}
+                    </div>
+                  </CardContent>
+                  <CardContent className="p-4">
+                    <div className="text-l">
+                      <b>Raw Output</b>
+                    </div>
+                    <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+                      {typeof job.output === 'object' && job.output?.raw ? job.output.raw : job.output}
+                    </div>
+                  </CardContent>
+                </Card>
+              </React.Fragment>
+            ))
+          ) : (
+            <div>No run yet</div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Plan</span>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -176,10 +215,13 @@ export default function AgentStatus({ params }: { params: Params }) {
                 </CardContent>
                 <CardContent className="p-4">
                   <div className="text-sm text-muted-foreground">
-                    Raw Output
+                    Tasks config
                   </div>
                   <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
-                    {job.output}
+                    {JSON.stringify(
+                      job.agent_config.map(
+                        (item: Record<string, any>, i: number) => ({...item, ...job.task_config[i]})), null, 4)
+                    }
                   </div>
                 </CardContent>
               </Card>
@@ -189,6 +231,31 @@ export default function AgentStatus({ params }: { params: Params }) {
           )}
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <span>Individual Tasks output</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {agent.jobs.length ? (
+            agent.jobs.map((job, index) => (
+              <Card>
+                <CardContent className="p-4">
+                  <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+                    {typeof job.output === 'object' && job.output?.tasks ? job.output.tasks : "Not available"}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div>No run yet</div>
+          )}
+        </CardContent>
+      </Card>
+
+
     </div>
   );
 }
