@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 export default function SignIn() {
   const router = useRouter()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     // Add authentication logic here
     router.push("/");

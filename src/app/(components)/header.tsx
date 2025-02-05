@@ -30,7 +30,6 @@ export function Header() {
   // <p>{session.user?.email}</p>
   // <button onClick={() => signOut()}>Sign out</button>
 
-  console.log("SESSION TOKEN", session.accessToken)
   const username = session.user?.name || '';
 
   const handleLogout = () => {

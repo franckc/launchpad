@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 export default function SignUp() {
   const router = useRouter()
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: any) => {
     e.preventDefault();
     // Add sign-up logic here
     router.push("/");
