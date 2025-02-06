@@ -22,5 +22,10 @@ export async function POST(request: Request) {
   //   parser: LLM.parsers.json,
   // });
 
-  return Response.json({ status: 'ok', 'reply': 'Sounds great dude. Pick a time that works for ya.', booking_link: 'https://cal.com/franck-chastagnol/30min'});
+  return Response.json({
+    status: 'ok',
+    sender,
+    reply: 'Sounds great dude. Pick a time that works for ya.',
+    booking_link: 'https://cal.com/franck-chastagnol/30min'
+  });
 }
