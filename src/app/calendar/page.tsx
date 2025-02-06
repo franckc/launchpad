@@ -1,11 +1,11 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
+import { redirect } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -25,7 +25,7 @@ Family Time (DND): spend time with wife, kids and familiy in general. for exampl
 async function getCalEvents(accessToken: string) {
   // Google Calendar API call
   // See API reference https://developers.google.com/calendar/api/v3/reference/events/list
-  const timeMin = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 2 weeks
+  const timeMin = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
   const timeMax = new Date(Date.now()).toISOString(); // current time
   
   //await new Promise(resolve => setTimeout(resolve, 10000)); // 10-second delay
@@ -49,14 +49,21 @@ type Attendee = {
 };
 
 export default function Calendar() {
-  const { data: session } = useSession();
+  // Check user authentication status
+  const { data: session, status } = useSession()
+  if (status === "loading") {
+    return <p>Loading...</p>
+  }
+  if (status === "unauthenticated") {
+    redirect('/landing')
+  }
+
   const [events, setEvents] = useState<any[]>([]);
   const [isLoadingCalEvents, setIsLoadingCalEvents] = useState(true);
   const [isLoadingClassification, setIsLoadingClassification] = useState(false);
   const [taxonomy, setTaxonomy] = useState(DEFAULT_TAXONOMY.join('\n'));
 
   useEffect(() => {
-    if (!session) return;
     handleGetCalEvents();
   }, [session]);
 

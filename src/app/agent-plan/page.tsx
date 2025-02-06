@@ -1,8 +1,10 @@
 'use client';
 
 import axios from 'axios';
-
 import React, { useState } from "react";
+import { useRouter, useSession } from 'next-auth/react';
+import { redirect } from 'next/navigation';
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +18,6 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useToast } from "@/hooks/use-toast"
 import { DndProvider, useDrag, useDrop } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -77,6 +78,14 @@ interface Task {
 }
 
 export default function AgentPlanner() {
+  // Check user authentication status
+  const { data: session, status } = useSession()
+  if (status === "loading") {
+    return <p>Loading...</p>
+  }
+  if (status === "unauthenticated") {
+    redirect('/landing')
+  }
   const router = useRouter();
   const { toast } = useToast()
   

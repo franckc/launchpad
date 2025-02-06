@@ -1,5 +1,3 @@
-
-
 import { Gateway } from "@adaline/gateway";
 import { Config, MessageType } from "@adaline/types";
 

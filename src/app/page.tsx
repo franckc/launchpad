@@ -8,11 +8,12 @@ import HomePage from './home/page';
 
 export default function Home() {
 
-  // extracting data from usesession as session
-  const { data: session } = useSession()
-
-  // checking if sessions exists
-  if (!session) {
+  // Check the user's authenticaton status
+  const { data: session, status } = useSession()
+  if (status === "loading") {
+    return <p>Loading...</p>
+  }
+  if (status === "unauthenticated") {
     redirect('/landing')
   }
 

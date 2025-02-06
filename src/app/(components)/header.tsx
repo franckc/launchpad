@@ -24,7 +24,6 @@ export function Header() {
     return <></>;
   }
 
-
   // <p>Session = {JSON.stringify(session, null, 4)}</p>
   // <p>Welcome {session.user?.name}. Signed In As</p>
   // <p>{session.user?.email}</p>
