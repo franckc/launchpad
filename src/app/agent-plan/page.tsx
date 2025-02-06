@@ -2,7 +2,8 @@
 
 import axios from 'axios';
 import React, { useState } from "react";
-import { useRouter, useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { redirect } from 'next/navigation';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

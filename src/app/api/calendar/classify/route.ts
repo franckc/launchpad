@@ -1,4 +1,5 @@
 
+// @ts-ignore
 import LLM from "@themaximalist/llm.js";
 
 // Submit calendar events + event taxonomy for LLM to categorize each event.
@@ -18,7 +19,7 @@ export async function POST(request: Request) {
     `Classify each of the following events\n${eventsStr}\n` +
     `The output must be a list of pairs (event, type) in JSON format.`
 
-  console.log("CALLING THE LLM...")
+  //console.log("CALLING THE LLM...")
   const results = await LLM(prompt, {
     system,
     model: 'gemini-1.5-flash',
