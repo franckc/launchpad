@@ -25,7 +25,7 @@ Family Time (DND): spend time with wife, kids and familiy in general. for exampl
 async function getCalEvents(accessToken: string) {
   // Google Calendar API call
   // See API reference https://developers.google.com/calendar/api/v3/reference/events/list
-  const timeMin = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
+  const timeMin = new Date(Date.now() - 6 * 30 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
   const timeMax = new Date(Date.now()).toISOString(); // current time
   
   //await new Promise(resolve => setTimeout(resolve, 10000)); // 10-second delay
