@@ -8,6 +8,8 @@ export async function POST(request: Request) {
   const sender = body.sender;
   const message = body.message;
 
+  
+
 
   // const system =
   //   `You are a classification expert. You use the following taxonomy to classify events:\n${taxonomy}`

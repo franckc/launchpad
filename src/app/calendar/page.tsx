@@ -6,7 +6,7 @@ import { useSession } from "next-auth/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, ArrowLeftIcon } from "lucide-react";
+import { Loader2, ArrowLeftIcon, ChevronUpIcon, ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 
@@ -14,13 +14,14 @@ const DEFAULT_TAXONOMY = `Exercise: go to the gym, run, swim or any other type o
 No screen: not available online, no access to a computer
 Admin: team meeting, organize my calendar, set up meetings, etc...
 Learn: educational, reading, research 
-GSD (Get Shit Done): solo work time.
+GSD (Get Stuff Done): solo work time. sometime referred to as "DNS" (Do Not Schedule)
 Animals care: take care of my pets. feeding, walk them, etc...
 Hiring: interviews, recruiting, hiring committee
 Network / Mentor / Coach: typically 1:1 meeting
 Internal Meetings: professional meeting with employees at the company I work at
 External Meetings: professional meeting with people that do not work at the same company
 Family Time (DND): spend time with wife, kids and familiy in general. for example dinner time, activities.
+Chores: house maintenance, feed the pets, take trash out, etc...
 `.split('/n')
 
 async function getCalEvents(accessToken: string) {
@@ -63,9 +64,13 @@ export default function Calendar() {
 
   const [events, setEvents] = useState<any[]>([]);
   const [taxonomy, setTaxonomy] = useState(DEFAULT_TAXONOMY.join('\n'));
+  const [blocks, setBlocks] = useState<string>("");
   const [isLoadingCalEvents, setIsLoadingCalEvents] = useState(true);
   const [isLoadingClassification, setIsLoadingClassification] = useState(false);
   const [isLoadingComputeBlocks, setIsLoadingComputeBlocks] = useState(false);
+  const [showTableBody, setShowTableBody] = useState(true);
+  const [showTaxonomy, setShowTaxonomy] = useState(true);
+  const [showBlocks, setShowBlocks] = useState(true);
 
   useEffect(() => {
     handleGetCalEvents();
@@ -105,6 +110,7 @@ export default function Calendar() {
     setIsLoadingClassification(false);
   };
 
+  // Compute time blocks based on events.
   const handleComputeBlocks = async () => {
     setIsLoadingComputeBlocks(true);
     try {
@@ -118,9 +124,8 @@ export default function Calendar() {
       if (!response.ok) {
         throw new Error('Failed to compute blocks');
       }
-      const result = await response.json();
-      console.log('Blocks result:', result);
-      setEvents(result.events);
+      const results = await response.json();
+      setBlocks(JSON.stringify(results, null, 4));
     } catch (error) {
       console.error('Error computing blocks:', error);
     }
@@ -146,11 +151,30 @@ export default function Calendar() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Taxonomy</CardTitle>
+          <div className="flex items-center justify-between px-4 py-2">
+            <CardTitle>Taxonomy</CardTitle>
+            <Button
+              variant="ghost"
+              onClick={() => setShowTaxonomy(!showTaxonomy)}
+              className="p-0"
+            >
+              {showTaxonomy ? (
+                <ChevronUpIcon className="h-4 w-4" />
+              ) : (
+                <ChevronDownIcon className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent>
-          <Textarea rows={15} value={taxonomy} onChange={(e) => setTaxonomy(e.target.value)} />
-        </CardContent>
+          {showTaxonomy && (
+            <CardContent>
+              <Textarea
+                rows={15}
+                defaultValue={taxonomy}
+                onChange={(e) => setTaxonomy(e.target.value)}
+              />
+            </CardContent>
+          )}
       </Card>
 
       <Card>
@@ -159,9 +183,6 @@ export default function Calendar() {
             Calendar Events
             <Button onClick={handleClassifyEvents} disabled={isLoadingClassification}>
                   {isLoadingClassification ? <Loader2 className="animate-spin" /> : 'Classify events'}
-            </Button>
-            <Button onClick={handleComputeBlocks} disabled={isLoadingComputeBlocks}>
-                  {isLoadingComputeBlocks ? <Loader2 className="animate-spin" /> : 'Compute blocks'}
             </Button>
           </CardTitle>
         </CardHeader>
@@ -176,32 +197,84 @@ export default function Calendar() {
                 <TableHead>Classification</TableHead>
               </TableRow>
             </TableHeader>
-            <TableBody>
-              {events.length > 0 ? (
-                events.map((event, index) => (
-                  <TableRow key={index}>
-                    <TableCell>{event.summary}</TableCell>
-                    <TableCell>{event.start.dateTime || event.start.date}</TableCell>
-                    <TableCell>{event.organizer.email}</TableCell>
-                    <TableCell>{event.attendees ? event.attendees.map((attendee: Attendee) => attendee.email).join(', ') : 'No attendee'}</TableCell>
-                    <TableCell><b>{event.event_type || ''}</b></TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  {isLoadingCalEvents ? (
-                    <TableCell colSpan={4}>
-                      Loading calendar data...
-                      <Loader2 className="animate-spin" />
-                    </TableCell>
+            <>
+              <tr>
+                <TableCell colSpan={5} className="text-right">
+                  <Button
+                    variant="ghost"
+                    onClick={() => setShowTableBody(!showTableBody)}
+                  >
+                    {showTableBody ? <ChevronDownIcon /> : <ChevronUpIcon />}
+                  </Button>
+                </TableCell>
+              </tr>
+              {showTableBody && (
+                <TableBody>
+                  {events.length > 0 ? (
+                    events.map((event, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{event.summary}</TableCell>
+                        <TableCell>{event.start.dateTime || event.start.date}</TableCell>
+                        <TableCell>{event.organizer.email}</TableCell>
+                        <TableCell>
+                          {event.attendees
+                            ? event.attendees
+                                .map((attendee: Attendee) => attendee.email)
+                                .join(", ")
+                            : "No attendee"}
+                        </TableCell>
+                        <TableCell>
+                          <b>{event.category || ""}</b>
+                        </TableCell>
+                      </TableRow>
+                    ))
                   ) : (
-                    <TableCell colSpan={4}>No data found. Check console for error.</TableCell>
+                    <TableRow>
+                      {isLoadingCalEvents ? (
+                        <TableCell colSpan={5}>
+                          Loading calendar data...
+                          <Loader2 className="animate-spin" />
+                        </TableCell>
+                      ) : (
+                        <TableCell colSpan={5}>No data found. Check console for error.</TableCell>
+                      )}
+                    </TableRow>
                   )}
-                </TableRow>
+                </TableBody>
               )}
-            </TableBody>
+            </>
           </Table>
         </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between px-4 py-2">
+            <CardTitle>Time blocks</CardTitle>
+            <Button onClick={handleComputeBlocks} disabled={isLoadingComputeBlocks}>
+                  {isLoadingComputeBlocks ? <Loader2 className="animate-spin" /> : 'Compute blocks'}
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={() => setShowBlocks(!showBlocks)}
+              className="p-0"
+            >
+              {showTaxonomy ? (
+                <ChevronUpIcon className="h-4 w-4" />
+              ) : (
+                <ChevronDownIcon className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </CardHeader>
+          {showBlocks && (
+            <CardContent>
+              <Textarea
+                rows={15}
+                defaultValue={blocks}
+              />
+            </CardContent>
+          )}
       </Card>
     </div>
   );
