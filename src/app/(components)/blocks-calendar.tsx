@@ -1,3 +1,4 @@
+// A calendar component for displaying time blocks.
 'use client';
 
 import React from "react";
@@ -13,39 +14,30 @@ import 'react-big-calendar/lib/css/react-big-calendar.css';
 const locales = { 'en-US': require('date-fns/locale/en-US') };
 const localizer = dateFnsLocalizer({ format, parse, startOfWeek, getDay, locales });
 
-const mockEvents = [
-  { category: "Family", day: "Sunday", time_start: "8am", length: "8 hours" },
-  { category: "Work", day: "Monday", time_start: "8am", length: "3 hours" },
-  { category: "Work", day: "Tuesday", time_start: "8am", length: "3 hours" },
-  { category: "Work", day: "Wednesday", time_start: "8am", length: "3 hours" },
-  { category: "Personal", day: "Tuesday", time_start: "1pm", length: "3 hours" },
-  { category: "Personal", day: "Thursday", time_start: "1pm", length: "3 hours" },
-  { category: "Personal", day: "Friday", time_start: "1pm", length: "3 hours" },
-  { category: "Family", day: "Saturday", time_start: "8am", length: "8 hours" },
-];
 
-const eventColors = {
-  Work: '#4682B4',
-  Personal: '#32CD32',
-  Family: '#FFD700',
-};
+// Generate a unique color based on the event category.
+function eventColor(category: string) {
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 50%)`;
+}
 
-function parseTime(timeStr: string): number {
-  const match = timeStr.match(/(\d+)(am|pm)/i);
-  if (!match) return 0;
+// Parse a time string in the format "hh:mm AM/PM" and return the hour and minute.
+function parseTime(timeStr: string): { hour: number, min: number } {
+  const match = timeStr.match(/(\d+):(\d+) (AM|am|PM|pm)/i);
+  if (!match) return { 'hour': 0, 'min': 0 };
   let hour = parseInt(match[1], 10);
-  const period = match[2].toLowerCase();
+  let min = parseInt(match[2], 10);
+  const period = match[3].toLowerCase();
   if (period === 'pm' && hour !== 12) hour += 12;
   if (period === 'am' && hour === 12) hour = 0;
-  return hour;
+  return { hour, min };
 }
 
-function parseLength(lengthStr: string): number {
-  const match = lengthStr.match(/(\d+)/);
-  return match ? parseInt(match[1], 10) : 1;
-}
-
-function getCalendarEvents() {
+function getCalendarEvents(blocks: Array<any>) {
   const today = new Date();
   const weekStart = startOfWeek(today, { weekStartsOn: 1 }); // Monday start
   const dayMap: { [key: string]: number } = {
@@ -55,33 +47,35 @@ function getCalendarEvents() {
     Thursday: 3,
     Friday: 4,
     Saturday: 5,
-    Sunday: 6,
+    Sunday: -1,
   };
-  return mockEvents.map(me => {
-    const dayOffset = dayMap[me.day] || 0;
+  return blocks.map(block => {
+    const dayOffset = dayMap[block.day_of_the_week] || 0;
     const eventDate = new Date(weekStart);
     eventDate.setDate(weekStart.getDate() + dayOffset);
-    const startHour = parseTime(me.time_start);
+
+    const parsedStart = parseTime(block.block_time_start);
     const startDate = new Date(eventDate);
-    startDate.setHours(startHour, 0, 0, 0);
-    const duration = parseLength(me.length);
-    const endDate = new Date(startDate);
-    endDate.setHours(startHour + duration, 0, 0, 0);
+    startDate.setHours(parsedStart.hour, parsedStart.min, 0, 0);
+
+    const parsedEnd = parseTime(block.block_time_end);
+    const endDate = new Date(eventDate);
+    endDate.setHours(parsedEnd.hour, parsedEnd.min, 0, 0);
     return {
-      title: me.category,
+      title: block.category,
       start: startDate,
       end: endDate,
-      category: me.category,
+      category: block.category,
     };
   });
 }
 
-export default function ViewCalendar() {
+export function BlocksCalendar({ blocks }: { blocks: Array<any> }) {
   const { data: session, status } = useSession();
   if (status === "loading") return <p>Loading...</p>;
   if (status === "unauthenticated") redirect('/landing');
 
-  const calendarEvents = getCalendarEvents();
+  const calendarEvents = getCalendarEvents(blocks);
 
   return (
     <div style={{ height: 500 }}>
@@ -92,7 +86,7 @@ export default function ViewCalendar() {
         views={['week']}
         startAccessor="start"
         endAccessor="end"
-        style={{ height: 500 }}
+        style={{ height: 800 }}
         scrollToTime={new Date(new Date().setHours(8, 0, 0, 0))}
         formats={{
           dayHeaderFormat: (date, culture, localizer) =>
@@ -100,7 +94,7 @@ export default function ViewCalendar() {
         }}
         eventPropGetter={(event) => ({
           style: {
-            backgroundColor: eventColors[event.category as keyof typeof eventColors] || '#3174ad',
+            backgroundColor: eventColor(event.category),
             color: 'white',
             border: 'none',
           },

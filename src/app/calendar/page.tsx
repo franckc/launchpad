@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, ArrowLeftIcon, ChevronUpIcon, ChevronDownIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { BlocksCalendar } from "../(components)/blocks-calendar";
 
 
 const DEFAULT_TAXONOMY = `Exercise: go to the gym, run, swim or any other type of exercise
@@ -23,6 +24,7 @@ External Meetings: professional meeting with people that do not work at the same
 Family Time (DND): spend time with wife, kids and familiy in general. for example dinner time, activities.
 Chores: house maintenance, feed the pets, take trash out, etc...
 `.split('/n')
+
 
 async function getCalEvents(accessToken: string) {
   // Google Calendar API call
@@ -64,7 +66,7 @@ export default function Calendar() {
 
   const [events, setEvents] = useState<any[]>([]);
   const [taxonomy, setTaxonomy] = useState(DEFAULT_TAXONOMY.join('\n'));
-  const [blocks, setBlocks] = useState<string>("");
+  const [blocks, setBlocks] = useState<any[]>([]);
   const [isLoadingCalEvents, setIsLoadingCalEvents] = useState(true);
   const [isLoadingClassification, setIsLoadingClassification] = useState(false);
   const [isLoadingComputeBlocks, setIsLoadingComputeBlocks] = useState(false);
@@ -125,7 +127,7 @@ export default function Calendar() {
         throw new Error('Failed to compute blocks');
       }
       const results = await response.json();
-      setBlocks(JSON.stringify(results, null, 4));
+      setBlocks(results.blocks);
     } catch (error) {
       console.error('Error computing blocks:', error);
     }
@@ -271,11 +273,13 @@ export default function Calendar() {
             <CardContent>
               <Textarea
                 rows={15}
-                defaultValue={blocks}
+                defaultValue={JSON.stringify(blocks, null, 4)}
+                value={JSON.stringify(blocks, null, 2)}
               />
             </CardContent>
           )}
       </Card>
+      <BlocksCalendar blocks={blocks}/>
     </div>
   );
 }

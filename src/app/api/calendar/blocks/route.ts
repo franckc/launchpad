@@ -76,9 +76,9 @@ Return a JSON array of objects. The JSON schema for each object is:
     service: 'google',
     parser: LLM.parsers.json,
   }
-  const results = await llm.chat(prompt, config);
+  const blocks = await llm.chat(prompt, config);
 
-  console.log("RESULTS=" + JSON.stringify(results, null, 4));
+  console.log("RESULTS=" + JSON.stringify(blocks, null, 4));
 
-  return Response.json({ status: 'ok', results});
+  return Response.json({ status: 'ok', blocks});
 }
