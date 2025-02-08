@@ -9,7 +9,7 @@ export async function POST(request: Request) {
   const events: Array<any> = body.events;
   const taxonomy: string = body.taxonomy;
 
-  console.log("EVENTS=" + JSON.stringify(events, null, 4));
+  //console.log("EVENTS=" + JSON.stringify(events, null, 4));
 
   const taxonomyStr = taxonomy.trimEnd().split('\n').map((line: string) => ` - ${line}`).join('\n');
 
@@ -36,8 +36,8 @@ The output must be a list of objects in JSON format. The JSON schema for each ob
 
   const config = {
     temperature: 1.0,
-    model:  'deepseek-r1-distill-llama-70b', // 'gemini-1.5-flash','gpt-4o' 'deepseek-r1-distill-llama-70b'
-    service: 'groq',
+    model:  'gemini-2.0-flash', // 'gemini-1.5-flash','gpt-4o' 'deepseek-r1-distill-llama-70b'
+    service: 'google',
     parser: LLM.parsers.json,
   }
   const llm = new LLM();

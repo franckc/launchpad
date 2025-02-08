@@ -1,13 +1,14 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { redirect } from 'next/navigation'
+import { useRouter, redirect } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeftIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+
 
 const DEFAULT_TAXONOMY = `Exercise: go to the gym, run, swim or any other type of exercise
 No screen: not available online, no access to a computer
@@ -58,10 +59,13 @@ export default function Calendar() {
     redirect('/landing')
   }
 
+  const router = useRouter();
+
   const [events, setEvents] = useState<any[]>([]);
+  const [taxonomy, setTaxonomy] = useState(DEFAULT_TAXONOMY.join('\n'));
   const [isLoadingCalEvents, setIsLoadingCalEvents] = useState(true);
   const [isLoadingClassification, setIsLoadingClassification] = useState(false);
-  const [taxonomy, setTaxonomy] = useState(DEFAULT_TAXONOMY.join('\n'));
+  const [isLoadingComputeBlocks, setIsLoadingComputeBlocks] = useState(false);
 
   useEffect(() => {
     handleGetCalEvents();
@@ -101,8 +105,45 @@ export default function Calendar() {
     setIsLoadingClassification(false);
   };
 
+  const handleComputeBlocks = async () => {
+    setIsLoadingComputeBlocks(true);
+    try {
+      const response = await fetch('/api/calendar/blocks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ events }),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to compute blocks');
+      }
+      const result = await response.json();
+      console.log('Blocks result:', result);
+      setEvents(result.events);
+    } catch (error) {
+      console.error('Error computing blocks:', error);
+    }
+    setIsLoadingComputeBlocks(false);
+  };
+
   return (
     <div className="space-y-8">
+    
+      <div className="flex items-center space-x-4">
+        <Button
+            variant="ghost"
+            className="p-0"
+            onClick={() => router.push("/")}
+          >
+          <ArrowLeftIcon className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        <h2 className="text-2xl font-bold">
+          Calendar Training
+        </h2>
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Taxonomy</CardTitle>
@@ -118,6 +159,9 @@ export default function Calendar() {
             Calendar Events
             <Button onClick={handleClassifyEvents} disabled={isLoadingClassification}>
                   {isLoadingClassification ? <Loader2 className="animate-spin" /> : 'Classify events'}
+            </Button>
+            <Button onClick={handleComputeBlocks} disabled={isLoadingComputeBlocks}>
+                  {isLoadingComputeBlocks ? <Loader2 className="animate-spin" /> : 'Compute blocks'}
             </Button>
           </CardTitle>
         </CardHeader>
