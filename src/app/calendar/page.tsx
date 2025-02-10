@@ -29,8 +29,10 @@ Chores: house maintenance, feed the pets, take trash out, etc...
 async function getCalEvents(accessToken: string) {
   // Google Calendar API call
   // See API reference https://developers.google.com/calendar/api/v3/reference/events/list
-  const timeMin = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
-  const timeMax = new Date(Date.now()).toISOString(); // current time
+  // const timeMin = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
+  // const timeMax = new Date(Date.now()).toISOString(); // current time
+  const timeMin = new Date('2024-01-01').toISOString(); // January 1, 2024
+  const timeMax = new Date('2024-07-01').toISOString(); // June 30, 2024
   
   //await new Promise(resolve => setTimeout(resolve, 10000)); // 10-second delay
   
