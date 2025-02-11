@@ -58,7 +58,7 @@ model Account {
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@id(name: "compositeId", [provider, providerAccountId])
+  @@id([provider, providerAccountId])
   @@map(name: "account")
 }
 

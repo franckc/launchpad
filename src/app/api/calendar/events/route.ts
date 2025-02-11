@@ -46,7 +46,7 @@ async function refreshToken(account: Account): Promise<RefreshTokenResult> {
   // Update the tokens in the DB
   await prisma.account.update({
     where: {
-      compositeId: {  
+      provider_providerAccountId: {
         provider: account.provider,
         providerAccountId: account.providerAccountId,
       }
