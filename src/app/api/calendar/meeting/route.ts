@@ -56,9 +56,18 @@ export async function POST(request: Request) {
   const output = await llm.chat(prompt, config);
   var category = output?.category || 'Default'
 
-  // Some categories have space in them and it breaks the link.
-  // Replace space with a dash.
-  category = category.replace(/\s+/g, '-')
+  // sanitize and normalize the category.
+  // Some categories have non alphanumeric chars (ex space, / , (, ...) and it breaks the link.
+  // Convert category to lowercase and replace any non-alphanumeric character with a dash.
+  // For example: "Family Time (DND)" -> "family-time-dnd"
+  category = category
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+
+  // TODO: in the future, we'll want to make sure as part of the setup phase
+  // that calendars are created for each category. For now, we'll just assume.
 
   // Get a calendar link based on the category.
   const booking_link = `https://cal.com/franck-chastagnol/${category}`

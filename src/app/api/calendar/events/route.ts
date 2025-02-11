@@ -21,6 +21,7 @@ interface RefreshTokenResult {
   refresh_token?: string;
 }
 
+// Handle refreshing an expired OAuth token
 async function refreshToken(account: Account): Promise<RefreshTokenResult> {
   console.log("Refreshing token for account:", account.provider, account.providerAccountId);
   const response: Response = await fetch("https://oauth2.googleapis.com/token", {
@@ -38,7 +39,6 @@ async function refreshToken(account: Account): Promise<RefreshTokenResult> {
   if (!response.ok) throw tokensOrError;
 
   const newTokens = tokensOrError as NewTokens;
-  console.log("New tokens:", newTokens);
 
   // Some providers only issue refresh tokens once, so preserve if we did not get a new one
   const refresh_token = newTokens.refresh_token ?? account.refresh_token ?? undefined
@@ -66,16 +66,16 @@ async function refreshToken(account: Account): Promise<RefreshTokenResult> {
 }
 
 
+//
+// Fetch the user's Google Calendar events
+//
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
   if (!session) {
     return Response.json({ message: 'Authentication failed' },{ status: 401 })
   }
 
-  console.log(JSON.stringify(session, null, 4));
-
   // Load the user from the DB to get the access token.
-
   const user = await prisma.user.findUnique({
     where: {
       id: session.user.id
@@ -107,7 +107,7 @@ export async function GET(request: Request) {
 
   // Google Calendar API call
   // See API reference https://developers.google.com/calendar/api/v3/reference/events/list
-  const timeMin = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
+  const timeMin = new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
   const timeMax = new Date(Date.now()).toISOString(); // current time
 
   const calendarResponse = await fetch(
@@ -124,6 +124,8 @@ export async function GET(request: Request) {
     console.log("Google Calendar API error:", calendarResponse.status, JSON.stringify(jsonResp));
     return Response.json({ message: 'Failed to fetch calendar events' + JSON.stringify(jsonResp) }, { status: 500 })
   }
+
+  console.log(`Fetched ${jsonResp.items?.length} calendar events`);
 
   return Response.json(jsonResp);
 }
