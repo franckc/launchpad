@@ -56,6 +56,10 @@ export async function POST(request: Request) {
   const output = await llm.chat(prompt, config);
   const category = output?.category || 'Default'
 
+  // Some categories have space in them and it breaks the link.
+  // Replace space with a dash.
+  category.replace(/\s+/g, '-')
+
   // Get a calendar link based on the category.
   const booking_link = `https://cal.com/franck-chastagnol/${category}`
 
