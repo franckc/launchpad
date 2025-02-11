@@ -7,11 +7,11 @@ import LLM from "@themaximalist/llm.js";
 export async function POST(request: Request) {
   const body = await request.json();
   const events: Array<any> = body.events;
-  const taxonomy: string = body.taxonomy;
+  const taxonomy:  Array<any> = body.taxonomy;
 
   //console.log("EVENTS=" + JSON.stringify(events, null, 4));
 
-  const taxonomyStr = taxonomy.trimEnd().split('\n').map((line: string) => ` - ${line}`).join('\n');
+  const taxonomyStr = taxonomy.map((item: any) => ` - ${item.category}: ${item.description}`).join('\n');
 
   // Note: for now only sending the event title.
   // We could send more info like full description, attendees, start time, length, to improve classification.

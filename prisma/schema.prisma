@@ -5,7 +5,7 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
@@ -18,27 +18,97 @@ generator client {
 //  - directUrl =  Direct connection to the database. Used for migrations.
 //
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   url       = env("POSTGRES_PRISMA_URL_PGBOUNCER")
   directUrl = env("POSTGRES_URL_NON_POOLING")
 }
 
 model User {
-  id            Int         @id @default(autoincrement())
-  name          String
-  createdAt     DateTime    @default(now()) @map(name: "created_at")
-  updatedAt     DateTime    @updatedAt @map(name: "updated_at")
+  id            String          @id @default(cuid())
+  name          String?
+  email         String          @unique
+  emailVerified DateTime?       @map(name: "email_verified")
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+  // Optional for WebAuthn support
+  Authenticator Authenticator[]
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
   @@map(name: "user")
 }
 
+model Account {
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String  @map(name: "provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id(name: "compositeId", [provider, providerAccountId])
+  @@map(name: "account")
+}
+
+model Session {
+  sessionToken String   @unique @map(name: "session_token")
+  userId       String   @map(name: "user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "session")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@id([identifier, token])
+  @@map(name: "verification_token")
+}
+
+// Optional for WebAuthn support
+model Authenticator {
+  credentialID         String  @unique @map(name: "credential_id")
+  userId               String  @map(name: "user_id")
+  providerAccountId    String  @map(name: "provider_account_id")
+  credentialPublicKey  String  @map(name: "credential_public_key")
+  counter              Int
+  credentialDeviceType String  @map(name: "credential_device_type")
+  credentialBackedUp   Boolean @map(name: "credential_backed_up")
+  transports           String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, credentialID])
+  @@map(name: "authenticator")
+}
+
 model Agent {
-  id            Int         @id @default(autoincrement())
-  name          String
-  config        Json
-  jobs          Job[]
-  createdAt     DateTime    @default(now()) @map(name: "created_at")
-  updatedAt     DateTime    @updatedAt @map(name: "updated_at")
-  @@map(name: "agent")  
+  id        Int      @id @default(autoincrement())
+  name      String
+  config    Json
+  jobs      Job[]
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "agent")
 }
 
 enum JobStatusType {
@@ -50,15 +120,27 @@ enum JobStatusType {
 }
 
 model Job {
-  id            Int         @id @default(autoincrement())
-  agentId       Int         @map(name: "agent_id")
-  agent         Agent       @relation(fields: [agentId], references: [id])
-  objective     String
-  agent_config  Json
-  task_config   Json
-  status        JobStatusType
-  output        Json?
-  createdAt     DateTime    @default(now()) @map(name: "created_at")
-  updatedAt     DateTime    @updatedAt @map(name: "updated_at")
-  @@map(name: "job")  
+  id           Int           @id @default(autoincrement())
+  agentId      Int           @map(name: "agent_id")
+  agent        Agent         @relation(fields: [agentId], references: [id])
+  objective    String
+  agent_config Json
+  task_config  Json
+  status       JobStatusType
+  output       Json?
+  createdAt    DateTime      @default(now()) @map(name: "created_at")
+  updatedAt    DateTime      @updatedAt @map(name: "updated_at")
+
+  @@map(name: "job")
+}
+
+// Calendar preferences for the user.
+model CalPrefs {
+  id        Int      @id @default(autoincrement())
+  userId    String   @map(name: "user_id") @unique
+  data      Json? // Pref data, including categories of meetings
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+
+  @@map(name: "cal_prefs")
 }

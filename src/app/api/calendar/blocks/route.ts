@@ -1,3 +1,6 @@
+import prisma from '@/lib/prisma';
+import { getServerSession } from "next-auth/next"
+import { authOptions } from "../../auth/[...nextauth]/options";
 
 // @ts-ignore
 import LLM from "@themaximalist/llm.js";
@@ -5,9 +8,16 @@ import LLM from "@themaximalist/llm.js";
 // Submit calendar a list of historical calendar events for a given taxonomy category.
 // Returns a list of suggested time blocks for scheduling similar events in the future
 export async function POST(request: Request) {
+
+  // Check the user is authenticated
+  const session = await getServerSession(authOptions)
+  if (!session) {
+    return Response.json({ message: 'Authentication failed' },{ status: 401 })
+  }
+
   const body = await request.json();
   const events: Array<any> = body.events;
-  //const category: string = body.category;
+  const taxonomy: Array<any> = body.taxonomy;
 
   const eventsPrompt = [];
   for (const event of events) {
@@ -34,7 +44,7 @@ export async function POST(request: Request) {
       length_in_hours: event.length_in_hours
     });
   }
-  console.log("JSONEVENTS FOR PROMPT=" + JSON.stringify(eventsPrompt, null, 4));
+  // console.log("JSONEVENTS FOR PROMPT=" + JSON.stringify(eventsPrompt, null, 4));
 
   const prompt = `
 Analyze the following historical calendar event data.
@@ -65,7 +75,7 @@ Return a JSON array of objects. The JSON schema for each object is:
 }
 `;
 
-  console.log("PROMPT=", prompt);
+  //console.log("PROMPT=", prompt);
 
   // FIXME: it looks like LLM.js is not sending the system to the LLM? Add logging in LLM.js to confirm.
   // For now passing the system in the chat call.
@@ -78,7 +88,34 @@ Return a JSON array of objects. The JSON schema for each object is:
   }
   const blocks = await llm.chat(prompt, config);
 
-  console.log("RESULTS=" + JSON.stringify(blocks, null, 4));
+  //console.log("RESULTS=" + JSON.stringify(blocks, null, 4));
+
+  // Store the blocks and categories in the DB. The data will be used when scheduling future events.
+  const userId = session.user.id;
+  const calPrefs = await prisma.calPrefs.findFirst({ where: { userId } });
+  if (!calPrefs) {
+    console.log("Inserting new calPrefs row for userId " + userId);
+    await prisma.calPrefs.create( {
+      data: {
+        userId,
+        data: {
+          taxonomy,
+          blocks,
+        }
+      }
+    })
+  } else {
+    console.log("Updating calPrefs row for userId " + userId);
+    await prisma.calPrefs.update({
+      where: { userId },
+      data: {
+        data: {
+          taxonomy,
+          blocks,
+        }
+      }
+    });
+  }
 
   return Response.json({ status: 'ok', blocks});
 }

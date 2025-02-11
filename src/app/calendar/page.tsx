@@ -11,41 +11,86 @@ import { Button } from "@/components/ui/button";
 import { BlocksCalendar } from "../(components)/blocks-calendar";
 
 
-const DEFAULT_TAXONOMY = `Exercise: go to the gym, run, swim or any other type of exercise
-No screen: not available online, no access to a computer
-Admin: team meeting, organize my calendar, set up meetings, etc...
-Learn: educational, reading, research 
-GSD (Get Stuff Done): solo work time. sometime referred to as "DNS" (Do Not Schedule)
-Animals care: take care of my pets. feeding, walk them, etc...
-Hiring: interviews, recruiting, hiring committee
-Network / Mentor / Coach: typically 1:1 meeting
-Internal Meetings: professional meeting with employees at the company I work at
-External Meetings: professional meeting with people that do not work at the same company
-Family Time (DND): spend time with wife, kids and familiy in general. for example dinner time, activities.
-Chores: house maintenance, feed the pets, take trash out, etc...
-`.split('/n')
+const DEFAULT_TAXONOMY = [
+  {
+    "category": "Exercise",
+    "description": "go to the gym, run, swim or any other type of exercise"
+  },
+  {
+    "category": "No screen",
+    "description": "not available online, no access to a computer"
+  },
+  {
+    "category": "Admin",
+    "description": "team meeting, organize my calendar, set up meetings, etc..."
+  },
+  {
+    "category": "Learn",
+    "description": "educational, reading, research"
+  },
+  {
+    "category": "GSD",
+    "description": "solo work time. sometime referred to as 'DNS' (Do Not Schedule)"
+  },
+  {
+    "category": "Animals care",
+    "description": "take care of my pets. feeding, walk them, etc..."
+  },
+  {
+    "category": "Hiring",
+    "description": "interviews, recruiting, hiring committee"
+  },
+  {
+    "category": "Network / Mentor / Coach",
+    "description": "typically 1:1 meeting"
+  },
+  {
+    "category": "Internal Meetings",
+    "description": "professional meeting with employees at the company I work at"
+  },
+  {
+    "category": "External Meetings",
+    "description": "professional meeting with people that do not work at the same company"
+  },
+  {
+    "category": "Family Time (DND)",
+    "description": "spend time with wife, kids and familiy in general. for example dinner time, activities."
+  },
+  {
+    "category": "Chores",
+    "description": "house maintenance, feed the pets, take trash out, etc..."
+  },
+]
+
+function taxonomyToText(taxonomy: any[]) {
+  return taxonomy.map(item => `${item.category}: ${item.description}`).join('\n');
+}
+
+function textToTaxonomy(text: string) {
+  return text
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line.includes(':'))
+    .map(line => {
+      const [category, description] = line.split(': ');
+      return { "category": category.trim(), "description": description.trim() };
+    });
+}
 
 
 async function getCalEvents(accessToken: string) {
-  // Google Calendar API call
-  // See API reference https://developers.google.com/calendar/api/v3/reference/events/list
-  const timeMin = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
-  const timeMax = new Date(Date.now()).toISOString(); // current time
-  
   //await new Promise(resolve => setTimeout(resolve, 10000)); // 10-second delay
   
-  const calendarResponse = await fetch(
-    'https://www.googleapis.com/calendar/v3/calendars/primary/events' +
-    `?singleEvents=true&timeMin=${timeMin}&timeMax=${timeMax}&maxResults=2500&orderBy=startTime`,
-    {
-      headers: {
-       Authorization: `Bearer ${accessToken}`
-    }
-  });
-  const jsonResp = await calendarResponse.json();
-  // console.log("Google Calendar API response:", jsonResp);
-  
-  return jsonResp;
+  // Fetch calendar events from the backend.
+  const response = await fetch(`/api/calendar/events`);
+  if (response.ok) {
+    const data = await response.json();
+    console.log(`Fetched ${data.items?.length} calendar events`);
+    return data;
+  }
+  // TODO: show a toast
+  console.error('Failed to fetch calendar events');
+  throw new Error('Failed to fetch calendar events');
 }
 
 type Attendee = {
@@ -65,7 +110,7 @@ export default function Calendar() {
   const router = useRouter();
 
   const [events, setEvents] = useState<any[]>([]);
-  const [taxonomy, setTaxonomy] = useState(DEFAULT_TAXONOMY.join('\n'));
+  const [taxonomy, setTaxonomy] = useState<any[]>(DEFAULT_TAXONOMY);
   const [blocks, setBlocks] = useState<any[]>([]);
   const [isLoadingCalEvents, setIsLoadingCalEvents] = useState(true);
   const [isLoadingClassification, setIsLoadingClassification] = useState(false);
@@ -121,7 +166,7 @@ export default function Calendar() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ events }),
+        body: JSON.stringify({ events, taxonomy }),
       });
       if (!response.ok) {
         throw new Error('Failed to compute blocks');
@@ -172,8 +217,8 @@ export default function Calendar() {
             <CardContent>
               <Textarea
                 rows={15}
-                defaultValue={taxonomy}
-                onChange={(e) => setTaxonomy(e.target.value)}
+                defaultValue={taxonomyToText(taxonomy)}
+                onChange={(e) => setTaxonomy(textToTaxonomy(e.target.value)) }
               />
             </CardContent>
           )}
@@ -199,7 +244,6 @@ export default function Calendar() {
                 <TableHead>Classification</TableHead>
               </TableRow>
             </TableHeader>
-            <>
               <tr>
                 <TableCell colSpan={5} className="text-right">
                   <Button
@@ -244,7 +288,6 @@ export default function Calendar() {
                   )}
                 </TableBody>
               )}
-            </>
           </Table>
         </CardContent>
       </Card>
@@ -273,8 +316,8 @@ export default function Calendar() {
             <CardContent>
               <Textarea
                 rows={15}
-                defaultValue={JSON.stringify(blocks, null, 4)}
                 value={JSON.stringify(blocks, null, 2)}
+                readOnly={true}
               />
             </CardContent>
           )}
