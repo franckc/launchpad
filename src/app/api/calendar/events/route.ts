@@ -2,6 +2,7 @@ import prisma from '@/lib/prisma';
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "../../auth/[...nextauth]/options";
 
+const NUM_DAYS = 12 * 30; // Fetch 12 months worth of calendar events
 
 interface Account {
   provider: string;
@@ -107,7 +108,7 @@ export async function GET(request: Request) {
 
   // Google Calendar API call
   // See API reference https://developers.google.com/calendar/api/v3/reference/events/list
-  const timeMin = new Date(Date.now() - 12 * 30 * 24 * 60 * 60 * 1000).toISOString(); // current time minus 30 days
+  const timeMin = new Date(Date.now() -  NUM_DAYS * 24 * 60 * 60 * 1000).toISOString(); // current time minus X days
   const timeMax = new Date(Date.now()).toISOString(); // current time
 
   const calendarResponse = await fetch(
@@ -125,7 +126,18 @@ export async function GET(request: Request) {
     return Response.json({ message: 'Failed to fetch calendar events' + JSON.stringify(jsonResp) }, { status: 500 })
   }
 
+  //console.log("EVENTS", JSON.stringify(jsonResp.items, null, 4));
   console.log(`Fetched ${jsonResp.items?.length} calendar events`);
+
+  // Filter out event that are more than 8 hrs long. These are likely all day events or similar that are not useful for scheduling.
+  jsonResp.items = jsonResp.items.filter((event: any) => {
+    const startDate = new Date(event.start.date || event.start.dateTime);
+    const endDate = new Date(event.end.date || event.end.dateTime);
+    const lengthInHours = Math.round((endDate.getTime() - startDate.getTime()) / (60 * 60 * 1000));
+    return lengthInHours < 8;
+  });
+
+  console.log(`After filtering: ${jsonResp.items?.length} calendar events`);
 
   return Response.json(jsonResp);
 }
