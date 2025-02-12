@@ -29,13 +29,16 @@ export async function POST(request: Request) {
   if (!taxonomy) {
     return Response.json({ message: 'taxonomy not found' },{ status: 500 })
   }
-  const taxonomyStr = taxonomy.map((item: any) => ` - ${item.category}: ${item.description}`).join('\n');
+  const taxonomyStr = JSON.stringify(taxonomy, null, 4);
 
   const prompt = `
-  Here are the event categories you can choose from:
+  You are a classification expert.
+  I will give you a list of categories in JSON format.
+  Each category will have a "category" name, a "description", and "examples".
+  Here is a list of categories:
   ${taxonomyStr}
 
-  Analyze the following message to determine the category of the event:
+  Your job is to classify the following message into the correct category from the list I gave you.
   ${message}
   
   The output must be a JSON object with the following schema:
