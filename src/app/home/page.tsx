@@ -21,9 +21,9 @@ export default function HomePage() {
   return (
     <div className="space-y-8">
       <Calendar />
-      <AgentList />
+      {/* <AgentList />
       <ConnectedServices />
-      <AgentInbox />
+      <AgentInbox /> */}
     </div>
   );
 }

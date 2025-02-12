@@ -50,13 +50,13 @@ export function Header() {
         <div
           className="absolute left-1/2 transform -translate-x-1/2 text-xl font-semibold"
         >
-          Agent Launchpad
+          Personal Assistant
         </div>
         <div className="flex items-center gap-4">
-          <Button onClick={() => router.push("/agent-plan")}>
+          {/* <Button onClick={() => router.push("/agent-plan")}>
             <Plus className="mr-2 h-4 w-4" />
             New Agent
-          </Button>
+          </Button> */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Avatar className="h-8 w-8 cursor-pointer">
