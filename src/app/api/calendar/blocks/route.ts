@@ -58,13 +58,16 @@ The events are in the following JSON format:
 }
 ${JSON.stringify(eventsPrompt, null, 4)}
 
-First, group the events data by category.
-Then for each category, suggest optimal days and time blocks (minimum 30 minutes, maximum several hours)
-for scheduling similar events.
+I want you to do the following:
+- First, group the events by category and then by day of the week.
+- Then for each group of events, suggest optimal time blocks for scheduling similar events. 
 Prioritize recurring patterns and time blocks with multiple events, disregarding outliers.
-There should not be more than 2 time blocks per day per category.
+Each time block should be at least two hours long and no longer than 4 hours.
 
-Return a JSON array of objects. The JSON schema for each object is:
+Once you are finished suggesting the time blocks, you must review your proposal to make sure that none of the suggested time blocks overlap with each other.
+If two time blocks overlap, push out one of them to a later or earlier time to avoid overlap.
+
+Return a JSON array of objects representing the time blocks. The JSON schema for a time block is:
 {
   "category": "string", // Event category.
   "short_description": "string", // E.g., "Personal time block"

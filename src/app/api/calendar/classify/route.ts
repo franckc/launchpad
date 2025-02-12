@@ -14,18 +14,20 @@ async function processBatch(taxonomyStr: string, batch: Array<any>): Promise<Cla
 
   const system = `
 You are a classification expert.
-Here is the taxonomy you use to classify events into a specific category.
-Each line has a category and its associated description.
+I will give you a list of categories in JSON format.
+Each category will have a "category" name, a "description", and "examples".
+Your job is to classify events into the correct category from this list.
 ${taxonomyStr}
 You never use a category that is not in the taxonomy.
 `;
 
   const prompt = `
-Use the taxonomy to classify each of the following events into a category:
+Here are the events I want you to classify:
 ${eventsStr}
 
-If you are unsure, assign the category "Unknown" to the event.
-The output must be a list of objects in JSON format. The JSON schema for each object is:
+Give your answer as a JSON list of objects.
+Each object should have two fields: "event" (the event you were given) and "category" (the category you chose).
+Here is the JSON schema:
 {
 "event": "string",
 "category": "string"
@@ -51,7 +53,7 @@ export async function POST(request: Request) {
   const events: Array<any> = body.events;
   const taxonomy: Array<any> = body.taxonomy;
 
-  const taxonomyStr = taxonomy.map((item: any) => ` - ${item.category}: ${item.description}`).join('\n');
+  const taxonomyStr = JSON.stringify(taxonomy, null, 4);
 
   const batchSize = BATCH_SIZE;
   const results: Array<any> = [];
@@ -66,9 +68,15 @@ export async function POST(request: Request) {
   const batchResults = await Promise.all(batchPromises);
   batchResults.forEach((result: ClassificationResult[]) => results.push(...result));
 
+  // Make a dictionary of the categories for faster lookup
+  const categoriesByEvent: any = {};
+  results.forEach((item: any) => {
+    categoriesByEvent[item.event] = item.category;
+  });
+
   // Decorate each event with the classification result
-  results.forEach((item: any, index: number) => {
-    events[index].category = item.category;
+  events.forEach((event: any) => {
+    event.category = categoriesByEvent[event.summary] || 'Unclassified';
   });
 
   return Response.json({ status: 'ok', events });

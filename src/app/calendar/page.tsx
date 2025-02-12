@@ -10,71 +10,56 @@ import { Loader2, ArrowLeftIcon, ChevronUpIcon, ChevronDownIcon } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { BlocksCalendar } from "../(components)/blocks-calendar";
 
-
 const DEFAULT_TAXONOMY = [
   {
-    "category": "Exercise",
-    "description": "go to the gym, run, swim or any other type of exercise"
+    "category": "Health & Learning",
+    "definition": "Time dedicated to physical well-being and intellectual growth. Whether you're engaging in exercise or diving into educational pursuits, this category nurtures both body and mind.",
+    "examples": [
+      "Exercise: Gym sessions, running, swimming, etc.",
+      "Learning: Reading, research, online courses, or other educational activities."
+    ]
   },
   {
-    "category": "No screen",
-    "description": "not available online, no access to a computer"
-  },
-  {
-    "category": "Admin",
-    "description": "team meeting, organize my calendar, set up meetings, etc..."
-  },
-  {
-    "category": "Learn",
-    "description": "educational, reading, research"
-  },
-  {
-    "category": "GSD",
-    "description": "solo work time. sometime referred to as 'DNS' (Do Not Schedule)"
-  },
-  {
-    "category": "Animals care",
-    "description": "take care of my pets. feeding, walk them, etc..."
-  },
-  {
-    "category": "Hiring",
-    "description": "interviews, recruiting, hiring committee"
-  },
-  {
-    "category": "Network / Mentor / Coach",
-    "description": "typically 1:1 meeting"
+    "category": "Focused Work & Administration",
+    "definition": "Periods reserved for individual, deep work and managing routine administrative tasks. This time is essential for maintaining productivity and organization.",
+    "examples": [
+      "GSD (Do Not Schedule/solo work time)",
+      "Admin Tasks: Responding to emails, organizing calendars, setting up meetings, etc."
+    ]
   },
   {
     "category": "Internal Meetings",
-    "description": "professional meeting with employees at the company I work at"
+    "definition": "Professional engagements that occur within your organization. These sessions focus on collaboration, internal decision-making, and team strategy.",
+    "examples": [
+      "Internal Meetings: Meetings with colleagues and team members.",
+      "Internal Hiring Committee: Discussions or planning sessions with the hiring team within your company."
+    ]
   },
   {
     "category": "External Meetings",
-    "description": "professional meeting with people that do not work at the same company"
+    "definition": "Interactions with individuals or organizations outside your company. These meetings are aimed at building external relationships, recruiting, and professional networking.",
+    "examples": [
+      "External Meetings: Sessions with partners, clients, or external stakeholders.",
+      "Hiring (External aspects): Candidate interviews and recruiting calls.",
+      "Networking/Mentoring/Coaching: 1:1 meetings with external mentors, coaches, or professional contacts."
+    ]
   },
   {
-    "category": "Family Time (DND)",
-    "description": "spend time with wife, kids and familiy in general. for example dinner time, activities."
-  },
-  {
-    "category": "Chores",
-    "description": "house maintenance, feed the pets, take trash out, etc..."
-  },
+    "category": "Personal & Family",
+    "definition": "Dedicated time for nurturing personal relationships, including family, friends, and other social connections. This category covers a broad range of activities that contribute to your overall well-being and work-life balance.",
+    "examples": [
+      "Personal & Family Time (DND): Quality time with your wife, kids, friends, or extended family (dinner, outings, social events, etc.).",
+      "Chores: House maintenance, pet care, taking out the trash, etc., which also help create a stable personal environment."
+    ]
+  }
 ]
 
 function taxonomyToText(taxonomy: any[]) {
-  return taxonomy.map(item => `${item.category}: ${item.description}`).join('\n');
+  return JSON.stringify(taxonomy, null, 2);
 }
 
 function textToTaxonomy(text: string) {
-  return text
-    .split('\n')
-    .map(line => line.trim())
-    .filter(line => line.includes(':'))
-    .map(line => {
-      const [category, description] = line.split(': ');
-      return { "category": category.trim(), "description": description.trim() };
-    });
+  return JSON.parse(text);
 }
 
 
@@ -124,6 +109,9 @@ export default function Calendar() {
   }, [session]);
 
   const handleGetCalEvents = async () => {
+    // If events have already been loaded, no need to do it again.
+    if (events.length > 0) return;
+
     setIsLoadingCalEvents(true);
     try {
       const accessToken = (session as any)?.accessToken as string;
