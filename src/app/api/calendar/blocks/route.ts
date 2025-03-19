@@ -84,7 +84,7 @@ Return a JSON array of objects representing the time blocks. The JSON schema for
   // For now passing the system in the chat call.
   const llm = new LLM();
   const config = {
-    temperature: 1.0,
+    temperature: 0.6, // Lower temperature means more deterministic results.
     model:  'gemini-2.0-flash', // 'gemini-1.5-flash','gpt-4o' 'deepseek-r1-distill-llama-70b'
     service: 'google',
     parser: LLM.parsers.json,

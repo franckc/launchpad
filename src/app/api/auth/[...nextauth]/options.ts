@@ -22,11 +22,10 @@ export const authOptions = {
       authorization: {
         params: {
           scope: [
+            // See list of scopes: https://developers.google.com/identity/protocols/oauth2/scopes
             "openid",
             "https://www.googleapis.com/auth/userinfo.email",
             "https://www.googleapis.com/auth/userinfo.profile",
-            "https://www.googleapis.com/auth/gmail.readonly",
-            "https://www.googleapis.com/auth/calendar.readonly"
           ].join(" "),
           prompt: "consent",
           access_type: "offline",

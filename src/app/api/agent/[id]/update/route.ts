@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma';
-import { enqueue_job } from '@/lib/ai-engine';
+import { enqueue_job } from '@/lib/be';
 
 export async function POST(request: Request, { params }: { params: { id: string } }) {
   try {

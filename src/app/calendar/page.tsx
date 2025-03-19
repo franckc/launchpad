@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from "react";
-import { useRouter, redirect } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useSession } from "next-auth/react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,15 +84,15 @@ type Attendee = {
 
 export default function Calendar() {
   // Check user authentication status
-  const { data: session, status } = useSession()
-  if (status === "loading") {
-    return <p>Loading...</p>
-  }
-  if (status === "unauthenticated") {
-    redirect('/landing')
-  }
-
+  const { data: session, status } = useSession();
   const router = useRouter();
+
+  // Use useEffect to handle redirection after render
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push('/landing');
+    }
+  }, [status, router]);
 
   const [events, setEvents] = useState<any[]>([]);
   const [taxonomy, setTaxonomy] = useState<any[]>(DEFAULT_TAXONOMY);
@@ -166,6 +166,10 @@ export default function Calendar() {
     }
     setIsLoadingComputeBlocks(false);
   };
+
+  if (status === "loading") {
+    return <p>Loading...</p>
+  }
 
   return (
     <div className="space-y-8">

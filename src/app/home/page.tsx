@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { AgentList } from "../(components)/agent-list";
 import { ConnectedServices } from "../(components)/connected-services";
 import { AgentInbox } from "../(components)/agent-inbox";
-import { Calendar } from "../(components)/calendar-card";
+import { Calendar } from "../(components)/apps-card";
 
 export default function HomePage() {
   // Check user authentication status
@@ -20,10 +20,7 @@ export default function HomePage() {
 
   return (
     <div className="space-y-8">
-      <Calendar />
       <AgentList />
-      <ConnectedServices />
-      <AgentInbox />
     </div>
   );
 }

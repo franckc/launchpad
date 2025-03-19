@@ -1,26 +1,25 @@
 import prisma from '@/lib/prisma';
 
 export async function GET(request: Request, { params }: { params: { user_id: string } }) {
-  const userId = parseInt(params.user_id);
+  const userId = params.user_id;
   try {
     const agents = await prisma.agent.findMany({
-      // TODO: add where clause on user_id
+      where: {
+        userId: userId // Added where clause on user_id
+      },
       include: {
-        jobs: true,
+        image: true,
+        runs: {
+          orderBy: {
+            createdAt: 'desc'
+          },
+        }
       }
-      // include: {
-      //   jobs: {
-      //     orderBy: {
-      //       createdAt: 'desc'
-      //     },
-      //     take: 1
-      //   }
-      // }
     });
 
     const agentsWithLatestTask = agents.map(agent => ({
       ...agent,
-      latestJob: agent.jobs ? agent.jobs[0] : null
+      latestRun: agent.runs ? agent.runs[0] : null
     }));
 
     return new Response(JSON.stringify(agentsWithLatestTask), {

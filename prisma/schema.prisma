@@ -102,45 +102,52 @@ model Authenticator {
 
 model Agent {
   id        Int      @id @default(autoincrement())
-  name      String
+  userId    String   @map(name: "user_id")
   config    Json
-  jobs      Job[]
+  runs      Run[]
+  image     Image?
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
 
   @@map(name: "agent")
 }
 
-enum JobStatusType {
-  CREATED
+enum ImageBuildStatusType {
+  PENDING
+  RUNNING
+  DONE
+  ERROR
+}
+
+model Image {
+  id            Int             @id @default(autoincrement())
+  agentId       Int             @unique @map(name: "agent_id") // Note: 1:1 mapping Agent <> Image
+  agent         Agent           @relation(fields: [agentId], references: [id])
+  buildStatus   ImageBuildStatusType @map(name: "build_status")
+  name          String?         // Name of the docker image, populated after the build is done.
+  createdAt     DateTime        @default(now()) @map(name: "created_at")
+  updatedAt     DateTime        @updatedAt @map(name: "updated_at")
+
+  @@map(name: "image")
+}
+
+enum RunStatusType {
+  PENDING
   RUNNING
   WAITING_FOR_FEEDBACK
   DONE
   ERROR
 }
 
-model Job {
+model Run {
   id           Int           @id @default(autoincrement())
   agentId      Int           @map(name: "agent_id")
   agent        Agent         @relation(fields: [agentId], references: [id])
-  objective    String
-  agent_config Json
-  task_config  Json
-  status       JobStatusType
+  config       Json
+  status       RunStatusType
   output       Json?
   createdAt    DateTime      @default(now()) @map(name: "created_at")
   updatedAt    DateTime      @updatedAt @map(name: "updated_at")
 
-  @@map(name: "job")
-}
-
-// Calendar preferences for the user.
-model CalPrefs {
-  id        Int      @id @default(autoincrement())
-  userId    String   @map(name: "user_id") @unique
-  data      Json? // Pref data, including categories of meetings
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
-  @@map(name: "cal_prefs")
+  @@map(name: "run")
 }

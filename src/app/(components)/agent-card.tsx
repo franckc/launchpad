@@ -4,9 +4,9 @@ import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { TrashIcon, ClockIcon } from "lucide-react";
+import { TrashIcon } from "lucide-react";
 import { useRouter } from 'next/navigation'
-import { getJobStatusColor, formatDateAgo } from "@/lib/utils";
+import { getImageStatusColor } from "@/lib/utils";
 
 type Agent = Record<string, any>;
 
@@ -24,10 +24,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
     router.push(`/agent/${agent.id}/status`);
   };
 
-  // Defensive code to handle the case where the agent has no job yet.
-  // Should not happen in production.
-  const latestJob = agent.jobs.length ? agent.jobs[0] : null;
-  const latestJobStatus = agent.latestJob ? agent.latestJob.status : "";
+  const imageStatus = agent.image.buildStatus;
 
   return (
     <Card
@@ -37,7 +34,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
       <CardContent className="p-4">
         <div className="flex justify-between items-start">
           <h3 className="font-semibold text-lg">
-            {agent.name}
+            {agent.config.agentName}
           </h3>
           <Button
             variant="ghost"
@@ -50,18 +47,9 @@ export function AgentCard({ agent }: { agent: Agent }) {
         </div>
 
         <div className="mt-4 space-y-2">
-          <Badge className={getJobStatusColor(latestJobStatus)}>
-            {latestJobStatus.replace("_", " ")}
+          <Badge className={getImageStatusColor(imageStatus)}>
+            {imageStatus.replace("_", " ").replace("DONE", "DEPLOYED").replace("PENDING", "DEPLOYING")}
           </Badge>
-
-          { latestJob && (
-            <div
-              className="flex items-center text-sm text-muted-foreground"
-            >
-              <ClockIcon className="h-4 w-4 mr-1" />
-              {formatDateAgo(latestJob.updatedAt)}
-            </div>
-          )}
         </div>
       </CardContent>
     </Card>

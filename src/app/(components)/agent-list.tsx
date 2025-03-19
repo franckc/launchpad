@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { AgentCard } from "./agent-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BookCopyIcon } from "lucide-react";
+import { useSession } from "next-auth/react";
 
 export function AgentList() {
   interface Agent {
@@ -12,12 +13,19 @@ export function AgentList() {
   }
 
   const [agents, setAgents] = useState<Agent[]>([]);
+  const { data: session } = useSession();
 
   useEffect(() => {
     const fetchAgents = async () => {
       try {
-        // FIXME: dyanmic user id
-        const response = await fetch('/api/agents/list/0');
+        const userId = session?.user?.id;
+
+        // Check if we have a userId before fetching
+        if (!userId) {
+          console.error('User ID not found');
+          return;
+        }
+        const response = await fetch(`/api/agents/list/${userId}`);
         if (response.ok) {
           const data = await response.json();
           setAgents(data);

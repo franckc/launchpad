@@ -4,26 +4,30 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon, PencilIcon } from "lucide-react";
+import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon, PencilIcon, Car } from "lucide-react";
 import { useRouter } from 'next/navigation';
-import { getJobStatusColor, formatDate, formatDateAgo } from "@/lib/utils";
+import { getImageStatusColor, getRunStatusColor, formatDate, formatDateAgo } from "@/lib/utils";
 
 
-interface Job {
+interface Run {
   status: string;
-  // backward compatibility. Old output only were a string
-  output: string | Record<string, any>;
-  agent_config: any;
-  task_config: any;
+  config: any;
+  output: Record<string, any>;
   updatedAt: string;
+}
+
+interface Image {
+  name: string;
+  buildStatus: string;
 }
 
 interface Agent {
   config: {
     agentName: string;
-    objective: string;
+    githubUrl: string;
   };
-  jobs: Job[];
+  image: Image;
+  runs: Run[];
 }
 
 interface Params {
@@ -60,8 +64,8 @@ export default function AgentStatus({ params }: { params: Params }) {
 
 
 
-  const latestJob = agent.jobs.length ? agent.jobs[0] : null;
-  const latestJobStatus = agent.jobs.length ? agent.jobs[0].status : 'NO JOB';
+  const latestRun = agent.runs.length ? agent.runs[0] : null;
+  const latestRunStatus = agent.runs.length ? agent.runs[0].status : 'NO RUN';
 
   return (
     <div className="space-y-6">
@@ -82,180 +86,93 @@ export default function AgentStatus({ params }: { params: Params }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-2xl font-bold">
-            <span>{agent.config.agentName}</span>
+            <span>Config</span>
           </CardTitle>
         </CardHeader>
 
         <CardContent >
             <div className="text-sm text-muted-foreground">
-              Objective
+              Agent Name
             </div>
             <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
-              {agent.config.objective}
+              {agent.config.agentName}
             </div>
         </CardContent>
-        <CardContent>
+        <CardContent >
+            <div className="text-sm text-muted-foreground">
+              GitHub URL
+            </div>
+            <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+              {agent.config.githubUrl}
+            </div>
+        </CardContent>
+      </Card>
+
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between text-2xl font-bold">
+            <span>Image</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
           <div>
-            <Button
-              variant="outline"
-              onClick={() => router.push(`/agent/${agentId}/upsert`)}
-            >
-              <PencilIcon className="h-4 w-4 mr-2" />
-              Edit
-            </Button>
+            <div className="text-sm text-muted-foreground">
+              Build Status
+            </div>
+            <div className="text-m">
+              <Badge className={getImageStatusColor(agent.image.buildStatus)}>
+                {agent.image.buildStatus.replace("_", " ").replace("DONE", "DEPLOYED").replace("PENDING", "DEPLOYING")}
+              </Badge>
+            </div>
           </div>
         </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Status Overview</span>
-            <Badge
-              className={getJobStatusColor(latestJobStatus)}
-            >
-              {latestJobStatus}
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-sm text-muted-foreground">
-                  Last Run
-                </div>
-                <div className="text-2xl font-bold">
-                  {latestJob ? formatDateAgo(latestJob.updatedAt) : 'N/A'}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-4">
-                <div className="text-sm text-muted-foreground">
-                  Runs Completed
-                </div>
-                <div className="text-2xl font-bold">
-                  {agent.jobs.length}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div>
-            <Button disabled variant="outline">
-              <PauseIcon className="h-4 w-4 mr-2" />
-              Pause
-            </Button>
-            {/* <Button>
-              <PlayIcon className="h-4 w-4 mr-2" />
-              Resume
-            </Button> */}
-            <Button variant="outline">
-              <RotateCwIcon className="h-4 w-4 mr-2" />
-              Rerun
-            </Button>
-          </div>
+        <CardContent >
+            <div className="text-sm text-muted-foreground">
+              Image Name
+            </div>
+            <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+              {agent.image.name}
+            </div>
         </CardContent>
-      </Card>
+    </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Run output</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {agent.jobs.length ? (
-            agent.jobs.map((job, index) => (
-              <React.Fragment key={index}>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-l">
-                      <b>Run date</b>
-                    </div>
-                    <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
-                      {formatDate(job.updatedAt)}
-                    </div>
-                  </CardContent>
-                  <CardContent className="p-4">
-                    <div className="text-l">
-                      <b>Raw Output</b>
-                    </div>
-                    <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
-                      {typeof job.output === 'object' && job.output?.raw ? job.output.raw : job.output}
-                    </div>
-                  </CardContent>
-                </Card>
-              </React.Fragment>
-            ))
-          ) : (
-            <div>No run yet</div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Plan</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {agent.jobs.length ? (
-            agent.jobs.map((job, index) => (
-              <Card key={index}>
-                <CardContent className="p-4">
-                  <div className="text-sm text-muted-foreground">
-                    Run date
-                  </div>
-                  <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
-                    {formatDate(job.updatedAt)}
-                  </div>
-                </CardContent>
-                <CardContent className="p-4">
-                  <div className="text-sm text-muted-foreground">
-                    Tasks config
-                  </div>
-                  <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
-                    {JSON.stringify(
-                      job.agent_config.map(
-                        (item: Record<string, any>, i: number) => ({...item, ...job.task_config[i]})), null, 4)
-                    }
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          ) : (
-            <div>No run yet</div>
-          )}
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between">
-            <span>Individual Tasks output</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {agent.jobs.length ? (
-            agent.jobs.map((job, index) => (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span>Runs</span>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {agent.runs.length ? (
+          agent.runs.map((run, index) => (
+            <React.Fragment key={index}>
               <Card>
                 <CardContent className="p-4">
-                  <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
-                    {typeof job.output === 'object' && job.output?.tasks ? job.output.tasks : "Not available"}
+                  <div className="text-l">
+                    <b>Run date</b>
+                  </div>
+                  <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
+                    {formatDate(run.updatedAt)}
+                  </div>
+                </CardContent>
+                <CardContent className="p-4">
+                  <div className="text-l">
+                    <b>Status</b>
+                  </div>
+                  <div className="text-m">
+                    <Badge className={getRunStatusColor(run.status)}>
+                      {run.status}
+                    </Badge>
                   </div>
                 </CardContent>
               </Card>
-            ))
-          ) : (
-            <div>No run yet</div>
-          )}
-        </CardContent>
-      </Card>
-
-
+            </React.Fragment>
+          ))
+        ) : (
+          <div>No run yet</div>
+        )}
+      </CardContent>
+    </Card>
     </div>
   );
 }

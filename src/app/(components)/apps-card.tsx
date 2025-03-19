@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   CalendarIcon,
   Calendar1,
+  Users, // added new icon import
 } from "lucide-react";
 import { useRouter } from 'next/navigation'
 
@@ -16,7 +17,7 @@ export function Calendar() {
       <CardHeader>
         <CardTitle className="flex items-center space-x-2">
           <CalendarIcon className="h-5 w-5" />
-          <span>Calendars</span>
+          <span>Apps</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -28,6 +29,15 @@ export function Calendar() {
             <Calendar1 className="h-8 w-8 text-muted-foreground"/>
             <span className="text-sm font-medium">
               Google Calendar
+            </span>
+          </div>
+          <div
+            className="flex flex-col items-center space-y-2 p-4 rounded-lg border bg-card cursor-pointer"
+            onClick={() => router.push("/contacts")}
+          >
+            <Users className="h-8 w-8 text-muted-foreground"/>
+            <span className="text-sm font-medium">
+              Google Contacts
             </span>
           </div>
         </div>
