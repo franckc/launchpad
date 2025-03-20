@@ -25,6 +25,7 @@ interface Agent {
   config: {
     agentName: string;
     githubUrl: string;
+    envs?: Record<string, string>;
   };
   image: Image;
   runs: Run[];
@@ -107,7 +108,39 @@ export default function AgentStatus({ params }: { params: Params }) {
             </div>
         </CardContent>
       </Card>
-
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between text-2xl font-bold">
+            <span>Env Variables</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+        {agent.config.envs ? (
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="text-left pb-2 text-sm text-muted-foreground">Name</th>
+                <th className="text-left pb-2 text-sm text-muted-foreground">Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(agent.config.envs).map((key) => (
+                <tr key={key} className="border-t">
+                  <td className="py-2 text-sm font-medium">{key}</td>
+                  <td className="py-2 text-sm">
+                    {key.includes("KEY") || key.includes("TOKEN") 
+                      ? "•".repeat(agent.config.envs[key].length - 4) + agent.config.envs[key].slice(-4)
+                      : agent.config.envs[key]}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : (
+          <div>No environment variables</div>
+        )}
+        </CardContent>
+      </Card>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-2xl font-bold">
@@ -138,7 +171,7 @@ export default function AgentStatus({ params }: { params: Params }) {
 
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
+      <CardTitle className="flex items-center justify-between text-2xl font-bold">
           <span>Runs</span>
         </CardTitle>
       </CardHeader>

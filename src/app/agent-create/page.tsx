@@ -24,6 +24,7 @@ export default function AgentPlanner() {
   const [isLoading, setLoading] = useState(false);
   const [agentName, setAgentName] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
+  const [envVariables, setEnvVariables] = useState<Array<{ key: string; value: string }>>([ { key: '', value: '' } ]);
 
   // Use effect for conditional redirects
   useEffect(() => {
@@ -52,6 +53,10 @@ export default function AgentPlanner() {
         config: {
           agentName,
           githubUrl,
+          envs: envVariables.reduce((acc, { key, value }) => {
+            if (key) acc[key] = value;
+            return acc;
+          }, {}),
         }
       });
       
@@ -125,7 +130,58 @@ export default function AgentPlanner() {
               </div>
             </CardContent>
           </Card>
-          
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <SettingsIcon className="h-5 w-5 mr-2" />
+                Env Variables
+              </CardTitle>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <Label>Environment Variables</Label>
+                <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setEnvVariables([...envVariables, { key: '', value: '' }])}
+                >
+                Add a variable
+                </Button>
+              </div>
+              
+              {envVariables.map((variable, index) => (
+                <div key={index} className="flex space-x-2">
+                <div className="flex-1">
+                  <Input
+                  placeholder="Variable name"
+                  value={variable.key}
+                  onChange={(e) => {
+                    const newVariables = [...envVariables];
+                    newVariables[index].key = e.target.value;
+                    setEnvVariables(newVariables);
+                  }}
+                  />
+                </div>
+                <div className="flex-1">
+                  <Input
+                  placeholder="Variable value"
+                  value={variable.value}
+                  onChange={(e) => {
+                    const newVariables = [...envVariables];
+                    newVariables[index].value = e.target.value;
+                    setEnvVariables(newVariables);
+                  }}
+                  />
+                </div>
+                </div>
+              ))}
+              </div>
+            </CardContent>
+          </Card>
+
           <div className="flex justify-end">
             <Button 
               onClick={handleDeploy} 
