@@ -24,3 +24,16 @@ export async function create_agent_image(agentId: number, data: Record<string, a
   return response;
 }
 
+export async function start_agent_run(agentId: number) {
+  const url = process.env.SERVER_URL + '/api/agent/' + agentId + '/run/start';
+  console.log(`Calling ${url} to start a run for agent ${agentId}`);
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  return response;
+}

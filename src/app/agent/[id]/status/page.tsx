@@ -10,6 +10,7 @@ import { getImageStatusColor, getRunStatusColor, formatDate, formatDateAgo } fro
 
 
 interface Run {
+  id: string;
   status: string;
   config: any;
   output: Record<string, any>;
@@ -63,7 +64,21 @@ export default function AgentStatus({ params }: { params: Params }) {
     return <div>Loading...</div>;
   }
 
-
+  const startNewRun = async (agentId: string) => {
+    try {
+      const response = await fetch(`/api/agent/${agentId}/run/start`, {
+        method: 'POST',
+      });
+      if (response.ok) {
+        const data = await response.json();
+        router.push(`/agent/${agentId}/run/${data.runId}`);
+      } else {
+        console.error('Failed to start new run');
+      }
+    } catch (error) {
+      console.error('Error starting new run:', error);
+    }
+  };
 
   const latestRun = agent.runs.length ? agent.runs[0] : null;
   const latestRunStatus = agent.runs.length ? agent.runs[0].status : 'NO RUN';
@@ -172,7 +187,15 @@ export default function AgentStatus({ params }: { params: Params }) {
     <Card>
       <CardHeader>
       <CardTitle className="flex items-center justify-between text-2xl font-bold">
-          <span>Runs</span>
+            <span>Runs</span>
+            <Button
+            onClick={() => startNewRun(agentId)}
+            className="flex items-center space-x-1"
+            size="lg"
+            >
+            <PlayIcon className="h-4 w-4" />
+            <span>New Run</span>
+            </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -197,6 +220,15 @@ export default function AgentStatus({ params }: { params: Params }) {
                       {run.status}
                     </Badge>
                   </div>
+                </CardContent>
+                <CardContent className="p-4">
+                  <Button
+                    variant="outline"
+                    className="flex items-center space-x-1"
+                    onClick={() => router.push(`/agent/${agentId}/run/${run.id}`)}
+                  >
+                    <span>View Run Details</span>
+                  </Button>
                 </CardContent>
               </Card>
             </React.Fragment>
