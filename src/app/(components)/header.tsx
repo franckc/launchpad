@@ -53,7 +53,7 @@ export function Header() {
           Agent Launchpad
         </div>
         <div className="flex items-center gap-4">
-          <Button onClick={() => router.push("/agent-plan")}>
+          <Button onClick={() => router.push("/agent-create")}>
             <Plus className="mr-2 h-4 w-4" />
             New Agent
           </Button>

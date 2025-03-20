@@ -120,13 +120,14 @@ enum ImageBuildStatusType {
 }
 
 model Image {
-  id            Int             @id @default(autoincrement())
-  agentId       Int             @unique @map(name: "agent_id") // Note: 1:1 mapping Agent <> Image
-  agent         Agent           @relation(fields: [agentId], references: [id])
-  buildStatus   ImageBuildStatusType @map(name: "build_status")
-  name          String?         // Name of the docker image, populated after the build is done.
-  createdAt     DateTime        @default(now()) @map(name: "created_at")
-  updatedAt     DateTime        @updatedAt @map(name: "updated_at")
+  id          Int                  @id @default(autoincrement())
+  agentId     Int                  @unique @map(name: "agent_id") // Note: 1:1 mapping Agent <> Image
+  agent       Agent                @relation(fields: [agentId], references: [id])
+  runs        Run[]
+  buildStatus ImageBuildStatusType @map(name: "build_status")
+  name        String? // Name of the docker image, populated after the build is done.
+  createdAt   DateTime             @default(now()) @map(name: "created_at")
+  updatedAt   DateTime             @updatedAt @map(name: "updated_at")
 
   @@map(name: "image")
 }
@@ -140,14 +141,16 @@ enum RunStatusType {
 }
 
 model Run {
-  id           Int           @id @default(autoincrement())
-  agentId      Int           @map(name: "agent_id")
-  agent        Agent         @relation(fields: [agentId], references: [id])
-  config       Json
-  status       RunStatusType
-  output       Json?
-  createdAt    DateTime      @default(now()) @map(name: "created_at")
-  updatedAt    DateTime      @updatedAt @map(name: "updated_at")
+  id        Int           @id @default(autoincrement())
+  agentId   Int           @map(name: "agent_id")
+  imageId   Int           @map(name: "image_id")
+  agent     Agent         @relation(fields: [agentId], references: [id])
+  image     Image         @relation(fields: [imageId], references: [id])
+  config    Json
+  status    RunStatusType
+  output    Json?
+  createdAt DateTime      @default(now()) @map(name: "created_at")
+  updatedAt DateTime      @updatedAt @map(name: "updated_at")
 
   @@map(name: "run")
 }

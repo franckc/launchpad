@@ -14,6 +14,9 @@ export async function GET(request: Request, { params }: { params: { user_id: str
             createdAt: 'desc'
           },
         }
+      },
+      orderBy: {
+        createdAt: 'desc'
       }
     });
 

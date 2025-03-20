@@ -24,7 +24,7 @@ export function AgentCard({ agent }: { agent: Agent }) {
     router.push(`/agent/${agent.id}/status`);
   };
 
-  const imageStatus = agent.image.buildStatus;
+  const imageStatus = agent.image?.buildStatus || 'UNKOWN';
 
   return (
     <Card
