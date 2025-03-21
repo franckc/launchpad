@@ -24,7 +24,7 @@ export async function create_agent_image(agentId: number, data: Record<string, a
   return response;
 }
 
-export async function start_agent_run(agentId: number) {
+export async function start_agent_run(agentId: number, data: Record<string, any>) {
   const url = process.env.SERVER_URL + '/api/agent/' + agentId + '/run/start';
   console.log(`Calling ${url} to start a run for agent ${agentId}`);
 
@@ -33,6 +33,9 @@ export async function start_agent_run(agentId: number) {
     headers: {
       'Content-Type': 'application/json',
     },
+    body: JSON.stringify({
+      ...data
+    }),
   });
 
   return response;

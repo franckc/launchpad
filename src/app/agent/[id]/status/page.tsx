@@ -4,6 +4,14 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon, PencilIcon, Car } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { getImageStatusColor, getRunStatusColor, formatDate, formatDateAgo } from "@/lib/utils";
@@ -27,6 +35,7 @@ interface Agent {
     agentName: string;
     githubUrl: string;
     envs?: Record<string, string>;
+    inputKeys?: Array<string>;
   };
   image: Image;
   runs: Run[];
@@ -39,6 +48,8 @@ interface Params {
 export default function AgentStatus({ params }: { params: Params }) {
   const agentId = params.id;
   const [agent, setAgent] = useState<Agent | null>(null);
+  const [showInputModal, setShowInputModal] = useState(false);
+  const [inputs, setInputs] = useState<Record<string, string>>({});
 
   const router = useRouter();
 
@@ -64,10 +75,15 @@ export default function AgentStatus({ params }: { params: Params }) {
     return <div>Loading...</div>;
   }
 
-  const startNewRun = async (agentId: string) => {
+  const startNewRun = async (agentId: string, inputs: Record<string, string>) => {
     try {
+      const payload = { inputs: inputs, }
       const response = await fetch(`/api/agent/${agentId}/run/start`, {
         method: 'POST',
+        body: JSON.stringify(payload),
+        headers: {
+          'Content-Type': 'application/json',
+        },
       });
       if (response.ok) {
         const data = await response.json();
@@ -186,16 +202,68 @@ export default function AgentStatus({ params }: { params: Params }) {
 
     <Card>
       <CardHeader>
-      <CardTitle className="flex items-center justify-between text-2xl font-bold">
-            <span>Runs</span>
-            <Button
-            onClick={() => startNewRun(agentId)}
+        <CardTitle className="flex items-center justify-between text-2xl font-bold">
+          <span>Runs</span>
+          <Button
+            onClick={() => {
+              // Check if agent has input keys. If yes show a modal to enter input values,
+              // otherwise start a new run directly.
+              if (agent.config.inputKeys && agent.config.inputKeys.length > 0) {
+                setShowInputModal(true);
+              } else {
+                startNewRun(agentId, {});
+              }
+            }}
             className="flex items-center space-x-1"
             size="lg"
-            >
+              >
             <PlayIcon className="h-4 w-4" />
             <span>New Run</span>
-            </Button>
+          </Button>
+
+          {/* Input Keys Dialog */}
+          <Dialog open={showInputModal} onOpenChange={setShowInputModal}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Enter Run Parameters</DialogTitle>
+                <DialogDescription>
+                  Provide values for the required input parameters.
+                </DialogDescription>
+              </DialogHeader>
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                const inputValues = {};
+                agent.config.inputKeys?.forEach(key => { inputValues[key] = inputs[key] || '';});
+                startNewRun(agentId, inputValues);
+                setShowInputModal(false);
+              }}>
+              {agent.config.inputKeys?.map(key => (
+                <div key={key} className="mb-4">
+                  <label className="block text-sm font-medium mb-1">{key}</label>
+                  <input
+                    type="text"
+                    name={key}
+                    value={inputs[key] || ''}
+                    onChange={(e) => setInputs({...inputs, [key]: e.target.value})}
+                    className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600"
+                  />
+                </div>
+              ))}
+              <div className="flex justify-end space-x-2 mt-4">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => setShowInputModal(false)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit">
+                  Start Run
+                </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
