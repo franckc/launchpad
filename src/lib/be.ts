@@ -40,3 +40,36 @@ export async function start_agent_run(agentId: number, data: Record<string, any>
 
   return response;
 }
+
+export async function get_agent_run_status(agentId: number, runId: number) {
+  const url = process.env.SERVER_URL + '/api/agent/' + agentId + '/run/' + runId + '/status';
+  console.log('Fetching latest status of run ID from the server:', runId);
+  const response = await fetch(url, { 
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  });
+  const data = await response.json();
+  const latestStatus = data?.status;
+  console.log('latestStatus', latestStatus);
+  return latestStatus;
+}
+
+export async function get_agent_run_output(agentId: number, runId: number) {
+  const url = process.env.SERVER_URL + '/api/agent/' + agentId + '/run/' + runId + '/output';
+  console.log('Fetching latest output of run ID from the server:', runId);
+  const response = await fetch(url, { 
+    cache: 'no-store',
+    headers: {
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    }
+  });
+  const data = await response.json();
+  const latestOutput = data?.output;
+  return latestOutput;
+}

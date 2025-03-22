@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon, PencilIcon, Car } from "lucide-react";
+import { ArrowLeftIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { getImageStatusColor, getRunStatusColor, formatDate, formatDateAgo } from "@/lib/utils";
 
@@ -43,6 +43,8 @@ export default function RunStatus({ params }: { params: Params }) {
   const agentId = params.id;
   const runId = params.run_id;
   const [run, setRun] = useState<Run | null>(null);
+  const [stdoutExpanded, setStdoutExpanded] = useState(false);
+  const [stderrExpanded, setStderrExpanded] = useState(false);
 
   const router = useRouter();
 
@@ -82,14 +84,14 @@ export default function RunStatus({ params }: { params: Params }) {
             Back
         </Button>
         <h2 className="text-2xl font-bold">
-          Run Status
+          Run Details
         </h2>
       </div>
 
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-2xl font-bold">
-            <span>Run Instance</span>
+            <span>Instance</span>
           </CardTitle>
         </CardHeader>
         <CardContent >
@@ -129,7 +131,7 @@ export default function RunStatus({ params }: { params: Params }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-2xl font-bold">
-            <span>Run Status</span>
+            <span>Execution</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -138,7 +140,7 @@ export default function RunStatus({ params }: { params: Params }) {
             </div>
             <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
               <Badge className={getRunStatusColor(run.status)}>
-                {run.status.replace("_", " ")}
+                {run.status?.replace("_", " ") ?? "Unknown Status"}
               </Badge>
             </div>
         </CardContent>
@@ -155,18 +157,66 @@ export default function RunStatus({ params }: { params: Params }) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-2xl font-bold">
-            <span>Run Output</span>
+            <span>Result</span>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-            <div className="text-sm text-muted-foreground">
-              Output
-            </div>
-            <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
-              {run.output && Object.keys(run.output).length > 0 
-          ? JSON.stringify(run.output, null, 2) 
-          : "No output yet..."}
-            </div>
+        <CardContent className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between text-m font-bold">
+                <span>Output</span>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="p-0 h-auto" 
+                  onClick={() => setStdoutExpanded(!stdoutExpanded)}
+                >
+                  {stdoutExpanded ? (
+                    <ChevronUp className="h-4 w-4" />
+                  ) : (
+                    <ChevronDown className="h-4 w-4" />
+                  )}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            {stdoutExpanded && (
+              <CardContent>
+                <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+                  {run.output?.stdout?.length > 0 
+                    ? run.output.stdout 
+                    : "No output yet..."}
+                </div>
+                    </CardContent>
+                  )}
+          </Card>
+            <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between text-m font-bold">
+              <span>Errors</span>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                className="p-0 h-auto" 
+                onClick={() => setStderrExpanded(!stderrExpanded)}
+              >
+                {stderrExpanded ? (
+                <ChevronUp className="h-4 w-4" />
+                ) : (
+                <ChevronDown className="h-4 w-4" />
+                )}
+              </Button>
+              </CardTitle>
+            </CardHeader>
+            {stderrExpanded && (
+              <CardContent>
+              <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+                {run.output?.stderr?.length > 0 
+                ? run.output.stderr 
+                : "No error output yet..."}
+              </div>
+              </CardContent>
+            )}
+            </Card>
         </CardContent>
       </Card>
     </div>
