@@ -24,6 +24,60 @@ The platform acts as a launchpad for AI agents, abstracting away infrastructure 
 - **User Authentication**: Secure access to the platform with user authentication.
 - **Dashboard**: Centralized dashboard to manage and monitor all deployed agents.
 
+## Architecture
+The Veritai Agent Platform uses a client-server architecture with clear separation of concerns:
+
+### Frontend (This Repository)
+- Built with Next.js and React
+- Provides user interface for agent creation, configuration, and monitoring
+- Communicates with backend via REST API
+- Handles user authentication and session management
+
+### Backend Server
+- Implemented in [launchpad_be](https://github.com/franckc/launchpad_be)
+- Processes agent deployment requests
+- Builds and manages containers in isolated, sandboxed environments
+- Handles the complete agent execution lifecycle:
+  - Initialization and startup
+  - Runtime monitoring
+  - Result collection and storage
+  - Shutdown and cleanup
+
+### Communication Flow
+
+```mermaid
+graph TB
+    subgraph "Frontend (Next.js)"
+        UI[User Interface]
+        Auth[Authentication]
+        API_Client[API Client]
+    end
+    
+    subgraph "Backend Server"
+        API[REST API]
+        Builder[Container Builder]
+        Manager[Container Manager]
+        Monitor[Execution Monitor]
+    end
+    
+    subgraph "Agent Runtime"
+        Container[Sandboxed Containers]
+    end
+    
+    UI --> Auth
+    UI --> API_Client
+    API_Client -- JSON --> API
+    API -- JSON Response --> API_Client
+    API --> Builder
+    Builder --> Container
+    API --> Manager
+    Manager --> Container
+    Monitor --> Container
+    Monitor --> API
+```
+
+The platform's architecture ensures secure, scalable agent deployment while providing developers with a simple interface to manage their AI applications without worrying about infrastructure complexity.
+
 ## Installation
 
 1. Install dependencies:
