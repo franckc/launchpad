@@ -24,6 +24,7 @@ export default function AgentPlanner() {
   const [isLoading, setLoading] = useState(false);
   const [agentName, setAgentName] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
+  const [profileUrl, setProfileUrl] = useState("");
   const [envVariables, setEnvVariables] = useState<Array<{ key: string; value: string }>>([ { key: '', value: '' } ]);
 
   // Use effect for conditional redirects
@@ -48,15 +49,19 @@ export default function AgentPlanner() {
 
     // Called the business logic FE API to create an agent.
     try {
+      const envs = {};
+      envVariables.forEach(variable => {
+        if (variable.key) {
+          envs[variable.key] = variable.value;
+        }
+      });
+
       const response = await axios.put('/api/agent/create', {
         userId: session.user.id,
         config: {
           agentName,
           githubUrl,
-          envs: envVariables.reduce((acc, { key, value }) => {
-            if (key) acc[key] = value;
-            return acc;
-          }, {}),
+          envs
         }
       });
       
@@ -84,6 +89,7 @@ export default function AgentPlanner() {
     return <p>Loading...</p>;
   }
 
+
   // Render main component
   return (
       <div className="space-y-6">
@@ -100,14 +106,14 @@ export default function AgentPlanner() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
-                <SettingsIcon className="h-5 w-5 mr-2" />
+                {/* <SettingsIcon className="h-5 w-5 mr-2" /> */}
                 Configuration
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="name">
-                  Name
+                  Agent Name
                 </Label>
                 <Input
                   placeholder="Enter a name for your agent"
@@ -129,55 +135,68 @@ export default function AgentPlanner() {
                 />
               </div>
             </CardContent>
+            <CardContent className="space-y-6">
+              <div className="space-y-2">
+                <Label htmlFor="profile-url">
+                  Developer Profile
+                </Label>
+                <Input
+                  id="profile-url"
+                  placeholder="Enter the Developer's profile URL"
+                  value={profileUrl}
+                  onChange={(e) => setProfileUrl(e.target.value)}
+                />
+              </div>
+            </CardContent>
           </Card>
 
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center">
                 <SettingsIcon className="h-5 w-5 mr-2" />
-                Env Variables
+                Environment Variables
               </CardTitle>
             </CardHeader>
 
             <CardContent className="space-y-6">
               <div className="space-y-4">
-              <div className="flex justify-between items-center">
-                <Label>Environment Variables</Label>
-                <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setEnvVariables([...envVariables, { key: '', value: '' }])}
-                >
-                Add a variable
-                </Button>
-              </div>
-              
-              {envVariables.map((variable, index) => (
-                <div key={index} className="flex space-x-2">
-                <div className="flex-1">
-                  <Input
-                  placeholder="Variable name"
-                  value={variable.key}
-                  onChange={(e) => {
-                    const newVariables = [...envVariables];
-                    newVariables[index].key = e.target.value;
-                    setEnvVariables(newVariables);
-                  }}
-                  />
+                <div className="flex justify-between items-center">
+                  <Label>Environment Variables</Label>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => setEnvVariables([...envVariables, { key: '', value: '' }])}
+                  >
+                    Add variable
+                  </Button>
                 </div>
-                <div className="flex-1">
-                  <Input
-                  placeholder="Variable value"
-                  value={variable.value}
-                  onChange={(e) => {
-                    const newVariables = [...envVariables];
-                    newVariables[index].value = e.target.value;
-                    setEnvVariables(newVariables);
-                  }}
-                  />
-                </div>
-                </div>
-              ))}
+                
+                {envVariables.map((variable, index) => (
+                  <div key={index} className="flex space-x-2">
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Variable name"
+                        value={variable.key}
+                        onChange={(e) => {
+                          const newVariables = [...envVariables];
+                          newVariables[index].key = e.target.value;
+                          setEnvVariables(newVariables);
+                        }}
+                      />
+                    </div>
+                    <div className="flex-1">
+                      <Input
+                        placeholder="Variable value"
+                        value={variable.value}
+                        onChange={(e) => {
+                          const newVariables = [...envVariables];
+                          newVariables[index].value = e.target.value;
+                          setEnvVariables(newVariables);
+                        }}
+                      />
+                    </div>
+                  </div>
+                ))}
               </div>
             </CardContent>
           </Card>
@@ -187,7 +206,7 @@ export default function AgentPlanner() {
               onClick={handleDeploy} 
               disabled={isLoading}
             >
-              {isLoading ? "Deploying..." : "Deploy Agent"}
+              {isLoading ? "Deploying..." : "Deploy"}
             </Button>
           </div>
         </div>

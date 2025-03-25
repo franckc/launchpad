@@ -16,7 +16,7 @@ export default function SignIn() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl text-center">
-            Veritai LaunchPad
+            Veritai Launchpad
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col space-y-4">

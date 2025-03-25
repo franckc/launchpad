@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon, PencilIcon, Car } from "lucide-react";
+import { ArrowLeftIcon, PlayIcon, PauseIcon, RotateCwIcon, PencilIcon, Car, TrashIcon } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { getImageStatusColor, getRunStatusColor, formatDate, formatDateAgo } from "@/lib/utils";
 
@@ -75,6 +75,15 @@ export default function AgentStatus({ params }: { params: Params }) {
     return <div>Loading...</div>;
   }
 
+  // Decorate agent with mock dependencies for now
+  agent.dependencies = {
+    "Pydantic": "3.8",
+    "Pandas": "1.3.3",
+    "Numpy": "1.21.2",
+    "AWS S3 Cloud Storage": "1.42.0",
+    "Google Websearch MCP server": "2.6.0"
+  };
+
   const startNewRun = async (agentId: string, inputs: Record<string, string>) => {
     try {
       const payload = { inputs: inputs, }
@@ -119,6 +128,18 @@ export default function AgentStatus({ params }: { params: Params }) {
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-2xl font-bold">
             <span>Config</span>
+
+            <Button
+            onClick={() => {
+              // FIXME
+              console.log("Delete Agent not implemented yet")
+            }}
+            className="flex items-center space-x-1"
+            size="lg"
+              >
+            <TrashIcon className="h-4 w-4" />
+            <span>Delete</span>
+          </Button>
           </CardTitle>
         </CardHeader>
 
@@ -129,20 +150,42 @@ export default function AgentStatus({ params }: { params: Params }) {
             <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
               {agent.config.agentName}
             </div>
+            <div className="text-sm text-muted-foreground">
+              Agent Hash
+            </div>
+            <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+              0x123ABCD765FDEG
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Description
+            </div>
+            <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+              Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nulla nec dui eget
+            </div>
         </CardContent>
         <CardContent >
             <div className="text-sm text-muted-foreground">
               GitHub URL
             </div>
             <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
-              {agent.config.githubUrl}
+                <a href={agent.config.githubUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                {agent.config.githubUrl}
+                </a>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              Developer Profile
+            </div>
+            <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+              <a href="https://github.com/franckc" target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                https://github.com/franckc
+              </a>
             </div>
         </CardContent>
       </Card>
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center justify-between text-2xl font-bold">
-            <span>Env Variables</span>
+            <span>Environment Variables</span>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -170,8 +213,39 @@ export default function AgentStatus({ params }: { params: Params }) {
         ) : (
           <div>No environment variables</div>
         )}
-        </CardContent>
-      </Card>
+      </CardContent>
+    </Card>
+    <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between text-2xl font-bold">
+            <span>Tools & Libraries</span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+        {agent.config.envs ? (
+          <table className="w-full border-collapse">
+            <thead>
+              <tr>
+                <th className="text-left pb-2 text-sm text-muted-foreground">Name</th>
+                <th className="text-left pb-2 text-sm text-muted-foreground">Version</th>
+              </tr>
+            </thead>
+            <tbody>
+                {Object.keys(agent.dependencies).map((key) => (
+                <tr key={key} className="border-t">
+                  <td className="py-2 text-sm font-medium">{key}</td>
+                  <td className="py-2 text-sm">
+                  {agent.dependencies[key]}
+                  </td>
+                </tr>
+                ))}
+            </tbody>
+          </table>
+        ) : (
+          <div>No environment variables</div>
+        )}
+      </CardContent>
+    </Card>
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center justify-between text-2xl font-bold">
@@ -197,6 +271,18 @@ export default function AgentStatus({ params }: { params: Params }) {
             <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
               {agent.image.name}
             </div>
+            <div className="text-sm text-muted-foreground mt-4">
+              Last Updated
+            </div>
+            {agent.image.updatedAt ? (
+              <div className="text-m" style={{ whiteSpace: 'pre-wrap' }}>
+                {formatDate(agent.image.updatedAt)} ({formatDateAgo(agent.image.updatedAt)})
+              </div>
+            ) : (
+              <div className="text-m text-muted-foreground">
+                Not available
+              </div>
+            )}
         </CardContent>
     </Card>
 
@@ -271,33 +357,52 @@ export default function AgentStatus({ params }: { params: Params }) {
           agent.runs.map((run, index) => (
             <React.Fragment key={index}>
               <Card>
-                <CardContent className="p-4">
-                  <div className="text-l">
-                    <b>Run date</b>
+                <div className="p-4 space-y-4">
+                  <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                    Run ID
+                    </div>
+                    <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
+                    {run.id}
+                    </div>
                   </div>
-                  <div className="text-l" style={{ whiteSpace: 'pre-wrap' }}>
-                    {formatDate(run.updatedAt)}
-                  </div>
-                </CardContent>
-                <CardContent className="p-4">
-                  <div className="text-l">
-                    <b>Status</b>
-                  </div>
-                  <div className="text-m">
-                    <Badge className={getRunStatusColor(run.status)}>
-                      {run.status}
-                    </Badge>
-                  </div>
-                </CardContent>
-                <CardContent className="p-4">
                   <Button
                     variant="outline"
                     className="flex items-center space-x-1"
                     onClick={() => router.push(`/agent/${agentId}/run/${run.id}`)}
                   >
-                    <span>View Run Details</span>
+                    <span>Details</span>
                   </Button>
-                </CardContent>
+                  </div>
+                  
+                  <div className="flex flex-col gap-2">
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                    Run config hash
+                    </div>
+                    <div className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>
+                    #Ox123ABCD765FDEG
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                    Run date
+                    </div>
+                    <div className="text-sm" style={{ whiteSpace: 'pre-wrap' }}>
+                    {formatDate(run.updatedAt)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground">
+                    Status
+                    </div>
+                    <Badge className={getRunStatusColor(run.status)}>
+                    {run.status.replace('DONE', 'COMPLETED').replace('PENDING', 'RUNNING')}
+                    </Badge>
+                  </div>
+                  </div>
+                </div>
               </Card>
             </React.Fragment>
           ))

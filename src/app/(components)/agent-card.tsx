@@ -46,10 +46,15 @@ export function AgentCard({ agent }: { agent: Agent }) {
           </Button>
         </div>
 
-        <div className="mt-4 space-y-2">
-          <Badge className={getImageStatusColor(imageStatus)}>
-            {imageStatus.replace("_", " ").replace("DONE", "DEPLOYED").replace("PENDING", "DEPLOYING")}
-          </Badge>
+        <div className="mt-4 flex justify-between items-center">
+          <div className="space-y-2">
+            <Badge className={getImageStatusColor(imageStatus)}>
+              {imageStatus.replace("_", " ").replace("DONE", "DEPLOYED").replace("PENDING", "DEPLOYING")}
+            </Badge>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            {agent.updatedAt ? new Date(agent.updatedAt).toLocaleString() : 'Unknown'}
+          </div>
         </div>
       </CardContent>
     </Card>
