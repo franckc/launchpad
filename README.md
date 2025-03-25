@@ -42,6 +42,11 @@ The platform acts as a launchpad for AI agents, abstracting away infrastructure 
   POSTGRES_URL_NON_POOLING="postgres://...."       # Postgres connection string without pooling
   ```
 
+
+## Agent framework support
+The platform currently supports Agents developped using the CrewAI framework. More frameworks to be added soon.
+For an example of an agent that can be used for testing deployment, see https://github.com/franckc/crew_agent
+
 ## Development
 
 ### Useful Commands
