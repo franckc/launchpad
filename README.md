@@ -53,27 +53,26 @@ graph TB
         API_Client[API Client]
     end
     
-    subgraph "Backend Server (Python+Docker)"
+    subgraph "Backend Server"
         API[REST API]
-        Builder[Container Builder]
-        Manager[Container Manager]
+        Container_Manager[Container Manager]
+        Agent_Manager[Agent Manager]
     end
     
-    subgraph "Agent Runtime"
-        Container[Sandboxed Containers]
-        Supervisor[Agent Execution Supervisor]
+    subgraph "Container"
+        Agent[Agent]
+        Supervisor[Supervisor]
     end
     
     UI --> Auth
     UI --> API_Client
     API_Client -- JSON --> API
     API -- JSON Response --> API_Client
-    API --> Builder
-    Builder --> Container
-    API --> Manager
-    Manager --> Container
-    Supervisor --> Container
-    Supervisor --> API
+    API --> Agent_Manager
+    API --> Container_Manager
+    Container_Manager --> Container
+    Agent_Manager --> Supervisor
+    Supervisor --> Agent
 ```
 
 The platform's architecture ensures secure, scalable agent deployment while providing developers with a simple interface to manage their AI applications without worrying about infrastructure complexity.
