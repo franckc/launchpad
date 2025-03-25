@@ -21,7 +21,7 @@ The platform acts as a launchpad for AI agents, abstracting away infrastructure 
 - **Agent Creation**: Easily create new agents by providing a name and GitHub repository URL.
 - **Environment Variables**: Configure environment variables for your agents.
 - **Deployment Management**: Deploy agents with a single click and monitor their status.
-- **User Authentication**: Secure access to the platform with user authentication.
+- **User Authentication**: Secure access to the platform with user authentication (Google OAuth)
 - **Dashboard**: Centralized dashboard to manage and monitor all deployed agents.
 
 ## Architecture
@@ -79,6 +79,13 @@ The platform's architecture ensures secure, scalable agent deployment while prov
 
 ## Installation
 
+### Prerequisites
+
+- Node.js v23.1 or higher
+- PostgreSQL database
+
+## Install steps
+
 1. Install dependencies:
   ```bash
   pnpm install
@@ -122,6 +129,12 @@ prisma migrate dev
 ### Security
 - [ ] Add authentication to Next.js API routes
 - [ ] Add authentication to Server API calls (Bearer token implementation)
+
+## User roles
+- Define 3 distinct roles:
+  - Developer: can deploy new agents to the platform
+  - User: can start agent runs and get their results
+  - Admin: can configure the platform, manage users, blacklist/whitelist agents, inspect details of all runs.
 
 ### UI Improvements
 - [ ] Add spinner or redirect to status page after clicking "Deploy Agent"
